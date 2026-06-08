@@ -690,114 +690,141 @@ function setProgress(pct) {
   document.getElementById('procBar').style.width = pct+'%';
 }
 
-// ── AI PROCESSING via SSE ─────────────────────────────────────────────────
+// ── AI PROCESSING — background job with polling ───────────────────────────
+// POST /api/process starts a job on the server and returns a jobId immediately.
+// We then poll GET /api/process/:jobId every 3 seconds until done or error.
+// This avoids all streaming/timeout issues on Railway.
+
+let pollInterval = null;
+
 async function runAIProcessing() {
   const title = document.getElementById('addTitle').value.trim();
   if (!title) { alert('Please enter the title first.'); return; }
   if (!currentFile) { alert('Please choose a PDF file first.'); return; }
 
+  // Reset UI
   document.getElementById('processingBox').classList.add('show');
   document.getElementById('aiPreview').classList.remove('show');
   document.getElementById('coverPreviewWrap').classList.remove('show');
-  document.getElementById('saveBtn').style.display='none';
-  [1,2,3,4,5].forEach(n=>setStep(n,'',''));
+  document.getElementById('saveBtn').style.display = 'none';
+  [1,2,3,4,5].forEach(n => setStep(n,'',''));
   setProgress(0);
-  pendingCoverSvg='';
-  document.getElementById('procEta').textContent='';
+  pendingCoverSvg = '';
+  document.getElementById('procEta').textContent = '';
+  if (pollInterval) clearInterval(pollInterval);
 
   const startTime = Date.now();
 
   try {
-    setStep(1,'active','Uploading PDF to server…');
+    // ── Step 1: Upload PDF and start job ──────────────────────────────────
+    setStep(1, 'active', 'Uploading PDF to server…');
     setProgress(5);
 
     const fd = new FormData();
-    fd.append('pdf', currentFile);
-    fd.append('title', title);
-    fd.append('author', document.getElementById('addAuthor').value.trim());
-    fd.append('year',   document.getElementById('addYear').value.trim());
+    fd.append('pdf',      currentFile);
+    fd.append('title',    title);
+    fd.append('author',   document.getElementById('addAuthor').value.trim());
+    fd.append('year',     document.getElementById('addYear').value.trim());
     fd.append('language', document.getElementById('addLang').value);
 
-    // Open SSE connection
-    const response = await fetch('/api/process', {
-      method: 'POST',
+    const startResp = await fetch('/api/process', {
+      method:  'POST',
       headers: { 'x-admin-token': adminToken },
-      body: fd,
+      body:    fd,
     });
 
-    if (!response.ok) {
-      const e = await response.json().catch(()=>({}));
-      throw new Error(e.error||`HTTP ${response.status}`);
+    if (!startResp.ok) {
+      const e = await startResp.json().catch(() => ({}));
+      throw new Error(e.error || `Upload failed (HTTP ${startResp.status})`);
     }
 
-    setStep(1,'done'); setProgress(10);
+    const { jobId } = await startResp.json();
+    if (!jobId) throw new Error('Server did not return a job ID.');
 
-    // Read SSE stream
-    const reader  = response.body.getReader();
-    const decoder = new TextDecoder();
-    let   buffer  = '';
-    let   result  = null;
+    setStep(1, 'done'); setProgress(10);
+    setStep(2, 'active', 'AI is reading the book…');
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop(); // keep incomplete line
-
-      for (const line of lines) {
-        if (!line.startsWith('data:')) continue;
+    // ── Step 2: Poll for progress every 3 seconds ─────────────────────────
+    await new Promise((resolve, reject) => {
+      pollInterval = setInterval(async () => {
         try {
-          const evt = JSON.parse(line.slice(5).trim());
-          if (evt.type === 'progress') {
-            const pct = Math.round(10 + (evt.step / evt.total) * 85);
-            setProgress(pct);
-            // Map server steps to UI steps
-            const uiStep = Math.min(evt.step + 1, 5);
-            for (let i = 1; i < uiStep; i++) setStep(i,'done');
-            setStep(uiStep,'active', evt.message);
-            // Estimate time remaining
-            const elapsed = (Date.now()-startTime)/1000;
-            const totalEst = (elapsed / (evt.step/evt.total));
-            const remaining = Math.max(0, Math.round(totalEst - elapsed));
-            if (remaining > 5) document.getElementById('procEta').textContent = `~${remaining}s remaining`;
-          } else if (evt.type === 'complete') {
-            result = evt.result;
-          } else if (evt.type === 'error') {
-            throw new Error(evt.message);
+          const pollResp = await fetch(`/api/process/${jobId}`, {
+            headers: { 'x-admin-token': adminToken },
+          });
+
+          if (!pollResp.ok) {
+            clearInterval(pollInterval);
+            reject(new Error(`Poll failed (HTTP ${pollResp.status})`));
+            return;
           }
-        } catch(parseErr) {
-          if (parseErr.message !== 'Unexpected end of JSON input') console.warn(parseErr);
+
+          const job = await pollResp.json();
+
+          // Update progress bar and step labels
+          const pct = Math.round(10 + (job.step / job.total) * 85);
+          setProgress(pct);
+
+          // Map server step to UI steps
+          if (job.step >= 1) { setStep(1,'done'); }
+          if (job.step >= 2) { setStep(2,'done'); setStep(3,'active', job.message||'Synthesising analysis…'); }
+          if (job.step >= 3) { setStep(3,'done'); setStep(4,'active', job.message||'Generating cover art…'); }
+          if (job.step >= 4) { setStep(4,'done'); setStep(5,'active', 'Finishing up…'); }
+
+          // Estimate time remaining
+          if (job.step > 0) {
+            const elapsed   = (Date.now() - startTime) / 1000;
+            const totalEst  = elapsed / (job.step / job.total);
+            const remaining = Math.max(0, Math.round(totalEst - elapsed));
+            if (remaining > 5) {
+              document.getElementById('procEta').textContent = `~${remaining}s remaining`;
+            } else {
+              document.getElementById('procEta').textContent = '';
+            }
+          }
+
+          if (job.status === 'complete') {
+            clearInterval(pollInterval);
+            resolve(job.result);
+          } else if (job.status === 'error') {
+            clearInterval(pollInterval);
+            reject(new Error(job.error || 'Processing failed on server.'));
+          }
+
+        } catch (pollErr) {
+          clearInterval(pollInterval);
+          reject(pollErr);
         }
+      }, 3000); // poll every 3 seconds
+    }).then(result => {
+      // ── Success ──────────────────────────────────────────────────────────
+      [1,2,3,4,5].forEach(n => setStep(n,'done'));
+      setProgress(100);
+      document.getElementById('procEta').textContent = '';
+
+      pendingCoverSvg = result.coverSvg || '';
+      const cat = CATS.find(c => c.id === result.domain) || CATS[1];
+
+      document.getElementById('previewDomain').textContent  = `${cat.n} — ${cat.label}`;
+      document.getElementById('previewCat').value           = cat.id;
+      document.getElementById('previewSummary').value       = result.summary || '';
+      document.getElementById('previewNote').value          = result.note    || '';
+      document.getElementById('previewTags').value          = (result.tags   || []).join(', ');
+
+      if (pendingCoverSvg) {
+        document.getElementById('coverPreviewBox').innerHTML = pendingCoverSvg;
+        document.getElementById('coverPreviewWrap').classList.add('show');
       }
-    }
-
-    if (!result) throw new Error('No result received from server');
-
-    [1,2,3,4,5].forEach(n=>setStep(n,'done'));
-    setProgress(100);
-    document.getElementById('procEta').textContent='';
-
-    // Populate preview
-    const cat = CATS.find(c=>c.id===result.domain)||CATS[1];
-    pendingCoverSvg = result.coverSvg||'';
-    document.getElementById('previewDomain').textContent = `${cat.n} — ${cat.label}`;
-    document.getElementById('previewCat').value   = cat.id;
-    document.getElementById('previewSummary').value = result.summary||'';
-    document.getElementById('previewNote').value    = result.note||'';
-    document.getElementById('previewTags').value    = (result.tags||[]).join(', ');
-
-    if (pendingCoverSvg) {
-      document.getElementById('coverPreviewBox').innerHTML = pendingCoverSvg;
-      document.getElementById('coverPreviewWrap').classList.add('show');
-    }
-    document.getElementById('aiPreview').classList.add('show');
-    document.getElementById('saveBtn').style.display='block';
+      document.getElementById('aiPreview').classList.add('show');
+      document.getElementById('saveBtn').style.display = 'block';
+    });
 
   } catch(err) {
-    [1,2,3,4,5].forEach(n=>{ if(document.getElementById('step'+n).className.includes('active')) setStep(n,'error'); });
-    document.getElementById('procEta').textContent='';
-    alert('AI processing failed: '+err.message);
+    if (pollInterval) clearInterval(pollInterval);
+    [1,2,3,4,5].forEach(n => {
+      if (document.getElementById('step'+n).className.includes('active')) setStep(n,'error');
+    });
+    document.getElementById('procEta').textContent = '';
+    alert('AI processing failed: ' + err.message + '\n\nYou can still save the entry manually using the button below.');
     console.error(err);
   }
 }
@@ -944,12 +971,4 @@ function defaultCover(title, cat) {
     <line x1="30" y1="133" x2="170" y2="133" stroke="#c9a84c" stroke-width="0.4" opacity="0.22"/>
     <text x="100" y="125" text-anchor="middle" font-family="serif" font-size="10" fill="#c9a84c" opacity="0.5" letter-spacing="1">${short}</text>
     <circle cx="100" cy="185" r="20" fill="none" stroke="#c9a84c" stroke-width="0.4" opacity="0.18"/>
-    <text x="100" y="191" text-anchor="middle" font-family="serif" font-size="14" fill="#c9a84c" opacity="0.15">✦</text>
-  </svg>`;
-}
-
-document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'));});
-boot();
-</script>
-</body>
-</html>
+    <text x="100" y="191" text-anchor="middle" font-family="serif" font-size="14" fill="#c9a84c" 
