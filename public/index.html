@@ -19,7 +19,9 @@
 html,body{height:100%;background:var(--deep);color:var(--text);font-family:var(--serif);font-size:16px;line-height:1.65}
 body{min-height:100vh;overflow-x:hidden}
 a{color:inherit;text-decoration:none}button{cursor:pointer}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--deep)}::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:2px}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--deep)}::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:2px}
+
+/* NAV */
 nav{position:sticky;top:0;z-index:100;background:rgba(15,13,11,0.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:0 2.5rem;display:flex;align-items:center;justify-content:space-between;height:62px;gap:1rem}
 .nav-brand{font-family:var(--title);font-size:1rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;flex-shrink:0;cursor:pointer}
 .nav-brand small{color:var(--text-dim);font-size:.58rem;display:block;letter-spacing:.3em;font-family:var(--serif);font-weight:300;margin-top:2px}
@@ -31,12 +33,27 @@ nav{position:sticky;top:0;z-index:100;background:rgba(15,13,11,0.97);backdrop-fi
 .nav-right{display:flex;align-items:center;gap:1rem;flex-shrink:0}
 .btn-ghost{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:var(--title);font-size:.62rem;letter-spacing:.16em;padding:.42rem 1.1rem;text-transform:uppercase;transition:all .2s;border-radius:var(--radius)}
 .btn-ghost:hover{background:var(--gold-glow);border-color:var(--gold)}
+
+/* DOMAIN TABS */
 .domain-nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 2.5rem;display:flex;align-items:stretch;overflow-x:auto;scrollbar-width:none}
 .domain-nav::-webkit-scrollbar{display:none}
 .dtab{background:none;border:none;border-bottom:2px solid transparent;color:var(--text-dim);font-family:var(--serif);font-size:.78rem;letter-spacing:.07em;padding:.85rem 1.1rem;white-space:nowrap;transition:all .2s;flex-shrink:0}
 .dtab:hover{color:var(--text-muted)}.dtab.active{color:var(--gold-light);border-bottom-color:var(--gold)}
 .dtab-all{font-family:var(--title);font-size:.64rem;letter-spacing:.14em;text-transform:uppercase}
+
+/* SUBCATEGORY TAG NAV — appears below domain header when a domain is selected */
+.tag-nav-wrap{display:none;background:var(--deep);border-bottom:1px solid var(--border);padding:.6rem 2.5rem;overflow-x:auto;scrollbar-width:none}
+.tag-nav-wrap::-webkit-scrollbar{display:none}
+.tag-nav-wrap.show{display:flex;align-items:center;gap:.4rem;flex-wrap:nowrap}
+.tag-nav-label{font-family:var(--serif);font-size:.64rem;letter-spacing:.18em;color:var(--text-dim);text-transform:uppercase;white-space:nowrap;margin-right:.4rem;flex-shrink:0}
+.ttab{background:transparent;border:1px solid var(--border);color:var(--text-dim);font-family:var(--serif);font-size:.72rem;letter-spacing:.06em;padding:.3rem .85rem;white-space:nowrap;transition:all .2s;flex-shrink:0;border-radius:var(--radius)}
+.ttab:hover{border-color:var(--border-med);color:var(--text-muted)}
+.ttab.active{background:var(--gold-glow2);border-color:var(--gold);color:var(--gold-light)}
+
+/* VIEWS */
 .view{display:none}.view.active{display:block}
+
+/* HERO */
 .hero{position:relative;padding:4rem 2.5rem 2.8rem;text-align:center;border-bottom:1px solid var(--border)}
 .hero-line{width:160px;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);margin:0 auto}
 .hero-orn{font-family:var(--serif);color:var(--gold-dim);font-size:.9rem;letter-spacing:.7em;margin:.9rem 0 .7rem;opacity:.6}
@@ -45,21 +62,33 @@ nav{position:sticky;top:0;z-index:100;background:rgba(15,13,11,0.97);backdrop-fi
 .hero-rule{width:45px;height:1px;background:var(--gold-dim);margin:.8rem auto}
 .hero-tag{font-family:var(--serif);font-size:.7rem;letter-spacing:.35em;color:var(--text-dim);text-transform:uppercase}
 .hero-stats{display:flex;justify-content:center;gap:3rem;margin-top:1.8rem;padding-top:1.4rem;border-top:1px solid var(--border)}
-.stat-item{text-align:center}.stat-n{font-family:var(--title);font-size:1.5rem;color:var(--gold);letter-spacing:.05em}
+.stat-item{text-align:center}
+.stat-n{font-family:var(--title);font-size:1.5rem;color:var(--gold);letter-spacing:.05em}
 .stat-l{font-family:var(--serif);font-size:.65rem;letter-spacing:.25em;color:var(--text-dim);text-transform:uppercase;margin-top:2px}
+
 main{padding:2.5rem;max-width:1440px;margin:0 auto}
+
+/* CAT BLOCKS */
 .cat-block{margin-bottom:3.5rem;animation:fadeUp .35s ease both}
 .cat-head{display:flex;align-items:flex-end;gap:1.2rem;margin-bottom:.4rem}
 .cat-num{font-family:var(--title);font-size:.6rem;color:var(--gold-dim);letter-spacing:.25em;margin-bottom:3px}
 .cat-name{font-family:var(--title);font-size:1rem;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;font-weight:400}
 .cat-count{margin-left:auto;font-family:var(--serif);font-size:.7rem;color:var(--text-dim);margin-bottom:3px}
-.cat-desc{font-family:var(--body);font-size:.87rem;color:var(--text-dim);font-style:italic;max-width:700px;margin-bottom:1.2rem;line-height:1.6}
+.cat-desc{font-family:var(--body);font-size:.87rem;color:var(--text-dim);font-style:italic;max-width:700px;margin-bottom:.8rem;line-height:1.6}
+
+/* INLINE TAG BAR — inside each category block on all-domains view */
+.cat-tag-bar{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:1.1rem}
+.cat-tag-chip{background:transparent;border:1px solid var(--border);color:var(--text-dim);font-family:var(--serif);font-size:.66rem;letter-spacing:.06em;padding:.22rem .7rem;transition:all .18s;border-radius:var(--radius)}
+.cat-tag-chip:hover{border-color:var(--border-med);color:var(--text-muted)}
+.cat-tag-chip.active{background:var(--gold-glow2);border-color:var(--gold);color:var(--gold-light)}
 .cat-rule{height:1px;background:var(--border);margin-bottom:1.4rem}
+
+/* GRID & CARDS */
 .pdf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1px;background:var(--border)}
 .pdf-card{background:var(--surface);transition:background .18s;display:flex;flex-direction:column;cursor:pointer;position:relative;overflow:hidden}
 .pdf-card:hover{background:var(--surface2)}.pdf-card:hover .card-action-row{opacity:1}.pdf-card:hover .card-overlay{opacity:1}
 .card-cover{width:100%;aspect-ratio:3/4;overflow:hidden;position:relative;background:var(--surface3);flex-shrink:0}
-.card-cover svg{width:100%;height:100%;display:block}
+.card-cover svg,.card-cover img{width:100%;height:100%;display:block}
 .card-overlay{position:absolute;inset:0;background:rgba(15,13,11,0.7);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
 .card-overlay-text{font-family:var(--title);font-size:.6rem;letter-spacing:.2em;color:var(--gold-light);text-transform:uppercase}
 .card-body{padding:1rem .95rem .85rem;display:flex;flex-direction:column;gap:.35rem;flex:1}
@@ -78,11 +107,13 @@ main{padding:2.5rem;max-width:1440px;margin:0 auto}
 .card-btn{background:none;border:1px solid var(--border);color:var(--gold);font-family:var(--title);font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;padding:.2rem .48rem;transition:all .15s}
 .card-btn:hover{background:var(--gold-glow2);border-color:var(--border-med)}.card-btn.del:hover{color:#c05050;border-color:rgba(192,80,80,0.35)}
 .empty-note{font-family:var(--body);font-size:.87rem;color:var(--text-dim);font-style:italic;padding:.3rem 0}
+
+/* DETAIL */
 .detail-back{display:flex;align-items:center;gap:.5rem;font-family:var(--serif);font-size:.78rem;letter-spacing:.1em;color:var(--text-dim);text-transform:uppercase;cursor:pointer;transition:color .2s;margin-bottom:2rem}
 .detail-back:hover{color:var(--gold)}
 .detail-layout{display:grid;grid-template-columns:280px 1fr;gap:2.8rem;align-items:start;animation:fadeUp .3s ease both}
 .detail-cover-art{width:100%;aspect-ratio:3/4;background:var(--surface2);border:1px solid var(--border);overflow:hidden;margin-bottom:1.1rem}
-.detail-cover-art svg{width:100%;height:100%;display:block}
+.detail-cover-art svg,.detail-cover-art img{width:100%;height:100%;display:block}
 .detail-badge{display:inline-block;font-family:var(--title);font-size:.56rem;letter-spacing:.18em;color:var(--gold-dim);border:1px solid var(--border);padding:.28rem .75rem;text-transform:uppercase;margin-bottom:.8rem}
 .detail-lang-badge{display:inline-block;font-family:var(--serif);font-size:.62rem;color:var(--text-dim);border:1px solid var(--border);padding:.2rem .6rem;margin-left:.4rem;font-style:italic}
 .detail-actions{display:flex;flex-direction:column;gap:.5rem;margin-top:.8rem}
@@ -101,13 +132,19 @@ main{padding:2.5rem;max-width:1440px;margin:0 auto}
 .detail-summary{font-family:var(--body);font-size:1rem;color:var(--text);line-height:1.75;margin-bottom:.8rem}
 .detail-note{font-family:var(--body);font-size:.9rem;color:var(--text-muted);font-style:italic;line-height:1.8}
 .detail-tags-row{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}
+.detail-tag-link{font-family:var(--serif);font-size:.66rem;letter-spacing:.07em;color:var(--gold-dim);border:1px solid rgba(201,168,76,0.18);padding:.18rem .6rem;border-radius:1px;text-transform:uppercase;cursor:pointer;transition:all .18s}
+.detail-tag-link:hover{border-color:var(--gold);color:var(--gold-light);background:var(--gold-glow)}
 .detail-pdf-frame{margin-top:1.2rem;width:100%;height:580px;border:1px solid var(--border);background:#fff}
 .detail-no-pdf{padding:2.5rem;text-align:center;background:var(--surface2);border:1px solid var(--border);margin-top:1.2rem}
 .detail-no-pdf p{font-family:var(--body);font-style:italic;color:var(--text-dim);font-size:.88rem}
 .ai-badge{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--serif);font-size:.65rem;color:var(--gold-dim);letter-spacing:.08em;margin-bottom:.5rem;opacity:.7}
 .ai-badge::before{content:'✦';font-size:.6rem}
+
+/* SEARCH */
 .search-header{font-family:var(--title);font-size:.68rem;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;margin-bottom:1.4rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
 .search-header span{color:var(--gold)}
+
+/* OVERLAYS */
 .overlay{display:none;position:fixed;inset:0;background:rgba(8,6,4,0.92);z-index:200;align-items:flex-start;justify-content:center;overflow-y:auto;padding:2rem}
 .overlay.show{display:flex}
 .panel{background:var(--surface);border:1px solid var(--border-hi);padding:2.2rem;width:580px;max-width:95vw;position:relative;margin:auto}
@@ -126,21 +163,33 @@ main{padding:2.5rem;max-width:1440px;margin:0 auto}
 .login-panel{text-align:center;width:340px}
 .login-orn{font-size:1.4rem;color:var(--gold-dim);margin-bottom:.5rem}
 .login-sub{font-family:var(--body);font-style:italic;font-size:.86rem;color:var(--text-muted);margin-bottom:1.3rem}
+
+/* PROCESSING */
 .processing-box{background:var(--surface2);border:1px solid var(--border-med);padding:1.3rem;margin:1rem 0;display:none}
 .processing-box.show{display:block}
-.proc-title{font-family:var(--title);font-size:.64rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:.9rem}
+.proc-title{font-family:var(--title);font-size:.64rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:.9rem;display:flex;align-items:center;justify-content:space-between}
+.proc-eta{font-family:var(--serif);font-size:.7rem;color:var(--text-dim);font-style:italic}
 .proc-steps{display:flex;flex-direction:column;gap:.55rem}
 .proc-step{display:flex;align-items:center;gap:.75rem;font-family:var(--serif);font-size:.8rem;color:var(--text-dim)}
 .proc-step.done{color:var(--text-muted)}.proc-step.active{color:var(--gold-light)}.proc-step.error{color:#b04040}
-.step-icon{width:18px;height:18px;border:1px solid var(--border-med);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.58rem;flex-shrink:0}
+.step-icon{width:18px;height:18px;border:1px solid var(--border-med);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.58rem;flex-shrink:0;transition:all .3s}
 .proc-step.done .step-icon{background:rgba(106,154,90,0.18);border-color:rgba(106,154,90,0.5);color:#6a9a5a}
 .proc-step.active .step-icon{background:var(--gold-glow2);border-color:var(--gold);animation:pulse 1s ease infinite}
 .proc-step.error .step-icon{background:rgba(176,64,64,0.2);border-color:rgba(176,64,64,0.4)}
+.proc-step-msg{flex:1;font-size:.78rem}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* PROGRESS BAR */
+.proc-bar-wrap{margin-top:.9rem;height:2px;background:var(--border);border-radius:2px;overflow:hidden}
+.proc-bar{height:100%;background:var(--gold);border-radius:2px;transition:width .5s ease;width:0}
+
+/* COVER PREVIEW */
 .cover-preview-wrap{margin-bottom:.8rem;display:none}.cover-preview-wrap.show{display:block}
 .cover-preview-label{font-family:var(--serif);font-size:.66rem;letter-spacing:.14em;color:var(--text-dim);text-transform:uppercase;margin-bottom:.4rem}
 .cover-preview-box{width:100px;height:133px;border:1px solid var(--border-med);overflow:hidden;background:var(--surface3)}
-.cover-preview-box svg{width:100%;height:100%;display:block}
+.cover-preview-box svg,.cover-preview-box img{width:100%;height:100%;display:block}
+
+/* AI PREVIEW */
 .ai-preview{background:var(--deep);border:1px solid var(--border);padding:1.2rem;margin:.9rem 0;display:none}.ai-preview.show{display:block}
 .ai-preview-title{font-family:var(--title);font-size:.6rem;letter-spacing:.2em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:.8rem}
 .ai-field{margin-bottom:.8rem}
@@ -150,6 +199,8 @@ main{padding:2.5rem;max-width:1440px;margin:0 auto}
 .ai-field input,.ai-field select{font-family:var(--serif);font-style:normal}
 .ai-field select option{background:var(--deep)}
 .ai-domain-val{font-family:var(--title);font-size:.72rem;letter-spacing:.1em;color:var(--gold-light)}
+
+/* ADMIN ENTRIES */
 .entries-table{margin-top:1.3rem;border-top:1px solid var(--border);padding-top:.8rem}
 .entries-table-title{font-family:var(--serif);font-size:.66rem;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;margin-bottom:.65rem}
 .entry-row{display:flex;align-items:center;gap:.65rem;padding:.42rem 0;border-bottom:1px solid rgba(201,168,76,0.06)}
@@ -158,10 +209,15 @@ main{padding:2.5rem;max-width:1440px;margin:0 auto}
 .entry-row-btns{display:flex;gap:.32rem;flex-shrink:0}
 .row-btn{background:none;border:1px solid var(--border);color:var(--text-dim);font-family:var(--serif);font-size:.65rem;padding:.15rem .48rem;transition:all .15s;border-radius:var(--radius)}
 .row-btn:hover{color:var(--gold);border-color:var(--border-med)}.row-btn.del:hover{color:#b04040;border-color:rgba(176,64,64,0.4)}
+
+/* FAB */
 .admin-fab{position:fixed;bottom:2rem;right:2rem;background:var(--surface3);border:1px solid var(--gold-dim);color:var(--gold);font-family:var(--title);font-size:.6rem;letter-spacing:.18em;padding:.7rem 1.4rem;text-transform:uppercase;z-index:50;transition:all .2s;border-radius:var(--radius);display:none;box-shadow:0 4px 20px rgba(0,0,0,0.4)}
 .admin-fab:hover{background:var(--gold-glow2);border-color:var(--gold)}
-.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--surface3);border:1px solid var(--border-med);color:var(--text-muted);font-family:var(--serif);font-size:.8rem;padding:.6rem 1.4rem;border-radius:var(--radius);z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--surface3);border:1px solid var(--border-med);color:var(--text-muted);font-family:var(--serif);font-size:.8rem;padding:.6rem 1.4rem;border-radius:var(--radius);z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
+
 footer{border-top:1px solid var(--border);padding:1.6rem 2.5rem;text-align:center;position:relative;margin-top:2rem}
 footer::before{content:'';position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:100px;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent)}
 .footer-text{font-family:var(--serif);font-size:.68rem;color:var(--text-dim);letter-spacing:.2em}
@@ -183,6 +239,7 @@ footer::before{content:'';position:absolute;top:-1px;left:50%;transform:translat
   </div>
 </nav>
 
+<!-- DOMAIN TABS -->
 <div class="domain-nav" id="domainNav">
   <button class="dtab dtab-all active" onclick="setTab('all',this)">All Domains</button>
   <button class="dtab" onclick="setTab('esotericism',this)">I · Esotericism</button>
@@ -197,6 +254,12 @@ footer::before{content:'';position:absolute;top:-1px;left:50%;transform:translat
   <button class="dtab" onclick="setTab('hct',this)">X · History · Culture · Technology</button>
 </div>
 
+<!-- SUBCATEGORY TAG NAV — shown when a single domain is active -->
+<div class="tag-nav-wrap" id="tagNav">
+  <span class="tag-nav-label">Subcategories</span>
+</div>
+
+<!-- HOME -->
 <div class="view active" id="view-home">
   <div class="hero">
     <div class="hero-line"></div>
@@ -214,6 +277,7 @@ footer::before{content:'';position:absolute;top:-1px;left:50%;transform:translat
   <main id="mainContent"><div style="text-align:center;padding:4rem;font-family:var(--body);font-style:italic;color:var(--text-dim)">Loading the archive…</div></main>
 </div>
 
+<!-- DETAIL -->
 <div class="view" id="view-detail">
   <main style="max-width:1060px;margin:0 auto;padding:2.5rem">
     <div class="detail-back" onclick="goHome()">
@@ -224,6 +288,7 @@ footer::before{content:'';position:absolute;top:-1px;left:50%;transform:translat
   </main>
 </div>
 
+<!-- SEARCH -->
 <div class="view" id="view-search">
   <main style="max-width:1100px;margin:0 auto;padding:2.5rem">
     <div class="search-header" id="searchHeader"></div>
@@ -232,7 +297,6 @@ footer::before{content:'';position:absolute;top:-1px;left:50%;transform:translat
 </div>
 
 <footer><p class="footer-text">Archivum Universale &nbsp;✦&nbsp; Dayton, Ohio &nbsp;✦&nbsp; All texts archived for scholarly inquiry</p></footer>
-
 <button class="admin-fab" id="adminFab" onclick="openAdminPanel()">+ Add Text</button>
 <div class="toast" id="toast"></div>
 
@@ -263,26 +327,35 @@ footer::before{content:'';position:absolute;top:-1px;left:50%;transform:translat
       </div>
       <div class="form-group">
         <label>PDF File</label>
-        <label for="addFile" id="fileLabel" style="display:flex;align-items:center;gap:.5rem;background:var(--deep);border:1px solid var(--border-med);color:var(--text-muted);font-family:var(--serif);font-size:.82rem;padding:.48rem .72rem;cursor:pointer;border-radius:var(--radius)">Choose PDF…</label>
+        <label for="addFile" id="fileLabel" style="display:flex;align-items:center;background:var(--deep);border:1px solid var(--border-med);color:var(--text-muted);font-family:var(--serif);font-size:.82rem;padding:.48rem .72rem;cursor:pointer;border-radius:var(--radius)">Choose PDF…</label>
         <input type="file" id="addFile" accept=".pdf" style="display:none" onchange="onFileChosen(this)">
       </div>
     </div>
+
     <button class="btn-primary" onclick="runAIProcessing()" style="margin-bottom:.6rem">✦ &nbsp;Analyse &amp; Process with AI</button>
-    <div class="form-hint" style="margin-bottom:.85rem;margin-top:-.3rem">Reads the PDF on the server, generates description, scholarly note, domain, tags, and unique cover art.</div>
+    <div class="form-hint" style="margin-bottom:.85rem;margin-top:-.3rem">The full book is read in sections and synthesised. Larger books take longer — progress is shown below.</div>
+
+    <!-- LIVE PROGRESS -->
     <div class="processing-box" id="processingBox">
-      <div class="proc-title">Processing</div>
-      <div class="proc-steps">
-        <div class="proc-step" id="step1"><div class="step-icon">1</div>Uploading PDF to server</div>
-        <div class="proc-step" id="step2"><div class="step-icon">2</div>AI analysis — generating metadata</div>
-        <div class="proc-step" id="step3"><div class="step-icon">3</div>Assigning domain &amp; tags</div>
-        <div class="proc-step" id="step4"><div class="step-icon">4</div>Generating tailored cover art</div>
-        <div class="proc-step" id="step5"><div class="step-icon">5</div>Ready for review</div>
+      <div class="proc-title">
+        Processing
+        <span class="proc-eta" id="procEta"></span>
       </div>
+      <div class="proc-steps" id="procSteps">
+        <div class="proc-step" id="step1"><div class="step-icon">1</div><span class="proc-step-msg">Uploading PDF</span></div>
+        <div class="proc-step" id="step2"><div class="step-icon">2</div><span class="proc-step-msg">Reading book sections</span></div>
+        <div class="proc-step" id="step3"><div class="step-icon">3</div><span class="proc-step-msg">Synthesising full analysis</span></div>
+        <div class="proc-step" id="step4"><div class="step-icon">4</div><span class="proc-step-msg">Generating cover art</span></div>
+        <div class="proc-step" id="step5"><div class="step-icon">5</div><span class="proc-step-msg">Complete</span></div>
+      </div>
+      <div class="proc-bar-wrap"><div class="proc-bar" id="procBar"></div></div>
     </div>
+
     <div class="cover-preview-wrap" id="coverPreviewWrap">
       <div class="cover-preview-label">Generated Cover Art</div>
       <div class="cover-preview-box" id="coverPreviewBox"></div>
     </div>
+
     <div class="ai-preview" id="aiPreview">
       <div class="ai-preview-title">✦ &nbsp;AI Analysis — Review &amp; Edit Before Saving</div>
       <div class="ai-field"><label>Assigned Domain</label><div class="ai-domain-val" id="previewDomain"></div></div>
@@ -297,8 +370,9 @@ footer::before{content:'';position:absolute;top:-1px;left:50%;transform:translat
       </div>
       <div class="ai-field"><label>Summary</label><textarea id="previewSummary"></textarea></div>
       <div class="ai-field"><label>Scholarly Note</label><textarea id="previewNote" style="min-height:90px"></textarea></div>
-      <div class="ai-field"><label>Tags <span style="color:var(--text-dim);font-size:.62rem">(comma-separated)</span></label><input type="text" id="previewTags"></div>
+      <div class="ai-field"><label>Tags <span style="color:var(--text-dim);font-size:.62rem">(comma-separated — each becomes a subcategory)</span></label><input type="text" id="previewTags"></div>
     </div>
+
     <button class="btn-primary" id="saveBtn" onclick="saveEntry()" style="display:none;margin-top:.4rem">Save to Archive</button>
     <button class="btn-secondary" onclick="saveEntryManual()" style="margin-top:.5rem">Save Without AI Processing</button>
     <div class="entries-table" id="adminEntries"></div>
@@ -319,101 +393,167 @@ const CATS = [
   {id:'hct',n:'X',label:'History · Culture · Technology',desc:'A threefold domain: the human past, culture as a total way of life, and technology as civilizational force — situating present realities within long arcs of transformation.'},
 ];
 
-let adminToken = sessionStorage.getItem('au_admin_token') || '';
-let isAdmin = false;
-let editingId = null;
-let currentFile = null;
+// ── STATE ──────────────────────────────────────────────────────────────────
+let adminToken   = sessionStorage.getItem('au_admin_token') || '';
+let isAdmin      = false;
+let editingId    = null;
+let currentFile  = null;
 let pendingCoverSvg = '';
-let pendingDomain = '';
-let allEntries = [];
-let activeTab = 'all';
-let searchTimer = null;
+let allEntries   = [];
+let allTagsByDomain = {};
+let activeTab    = 'all';
+let activeTag    = '';
+let searchTimer  = null;
 
-// ── API HELPERS ──────────────────────────────────────────────────────────────
+// ── API ────────────────────────────────────────────────────────────────────
 async function api(method, path, body, isFormData) {
   const opts = { method, headers: {} };
   if (adminToken) opts.headers['x-admin-token'] = adminToken;
   if (body && !isFormData) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
   else if (body) opts.body = body;
   const r = await fetch(path, opts);
-  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error || `HTTP ${r.status}`); }
+  if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.error || `HTTP ${r.status}`); }
   return r.json();
 }
 
-// ── BOOT ─────────────────────────────────────────────────────────────────────
+// ── BOOT ──────────────────────────────────────────────────────────────────
 async function boot() {
-  // Check if stored token is still valid
   if (adminToken) {
-    try {
-      await api('GET', '/api/entries');
-      isAdmin = true;
-      showAdminUI();
-    } catch { adminToken = ''; sessionStorage.removeItem('au_admin_token'); }
+    try { await api('GET','/api/health'); isAdmin = true; showAdminUI(); } catch { adminToken=''; sessionStorage.removeItem('au_admin_token'); }
   }
-  await loadEntries();
+  await loadAll();
 }
 
-async function loadEntries() {
+async function loadAll() {
   try {
-    allEntries = await api('GET', '/api/entries');
-    const stats = await api('GET', '/api/stats');
-    document.getElementById('statTexts').textContent = stats.total;
+    [allEntries, allTagsByDomain] = await Promise.all([
+      api('GET','/api/entries'),
+      api('GET','/api/tags'),
+    ]);
+    const stats = await api('GET','/api/stats');
+    document.getElementById('statTexts').textContent   = stats.total;
     document.getElementById('statDomains').textContent = stats.domains;
     render();
-  } catch (err) {
-    document.getElementById('mainContent').innerHTML = `<p style="font-family:var(--body);font-style:italic;color:var(--text-dim);padding:3rem;text-align:center">Could not connect to the archive server. ${err.message}</p>`;
+  } catch(err) {
+    document.getElementById('mainContent').innerHTML = `<p style="font-family:var(--body);font-style:italic;color:var(--text-dim);padding:3rem;text-align:center">Could not connect to the archive server: ${err.message}</p>`;
   }
 }
 
-// ── VIEWS ────────────────────────────────────────────────────────────────────
+// ── VIEWS ─────────────────────────────────────────────────────────────────
 function goHome() {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-home').classList.add('active');
   document.getElementById('domainNav').style.display = 'flex';
   document.getElementById('searchInput').value = '';
-  window.scrollTo(0, 0);
+  window.scrollTo(0,0);
 }
 function showDetailView() {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-detail').classList.add('active');
   document.getElementById('domainNav').style.display = 'none';
-  window.scrollTo(0, 0);
+  document.getElementById('tagNav').classList.remove('show');
+  window.scrollTo(0,0);
 }
 function showSearchView() {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-search').classList.add('active');
   document.getElementById('domainNav').style.display = 'flex';
 }
 
-// ── RENDER ───────────────────────────────────────────────────────────────────
+// ── TAG NAV ───────────────────────────────────────────────────────────────
+function buildTagNav(catId) {
+  const nav   = document.getElementById('tagNav');
+  const tags  = allTagsByDomain[catId] || [];
+  if (!tags.length || catId === 'all') { nav.classList.remove('show'); return; }
+
+  nav.innerHTML = `<span class="tag-nav-label">Subcategories</span>`;
+  tags.forEach(tag => {
+    const btn = document.createElement('button');
+    btn.className = 'ttab' + (tag === activeTag ? ' active' : '');
+    btn.textContent = tag;
+    btn.onclick = () => toggleTag(tag, btn);
+    nav.appendChild(btn);
+  });
+  nav.classList.add('show');
+}
+
+function toggleTag(tag, btn) {
+  if (activeTag === tag) {
+    activeTag = '';
+    document.querySelectorAll('.ttab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.cat-tag-chip').forEach(t=>t.classList.remove('active'));
+  } else {
+    activeTag = tag;
+    document.querySelectorAll('.ttab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.cat-tag-chip').forEach(t=>t.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+  }
+  render();
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────
 function render() {
+  buildTagNav(activeTab);
   const main = document.getElementById('mainContent');
   main.innerHTML = '';
   CATS.forEach((cat, idx) => {
     if (activeTab !== 'all' && activeTab !== cat.id) return;
-    const items = allEntries.filter(e => e.category === cat.id);
+    let items = allEntries.filter(e => e.category === cat.id);
+    if (activeTag) items = items.filter(e => (e.tags||[]).includes(activeTag));
     if (activeTab === 'all' && !items.length) return;
+
     const block = document.createElement('div');
     block.className = 'cat-block';
-    block.style.animationDelay = (idx * .04) + 's';
-    block.innerHTML = `<div class="cat-head"><div><div class="cat-num">${cat.n}</div><div class="cat-name">${cat.label}</div></div><span class="cat-count">${items.length} ${items.length===1?'text':'texts'}</span></div><p class="cat-desc">${cat.desc}</p><div class="cat-rule"></div>`;
+    block.style.animationDelay = (idx*.04)+'s';
+
+    // In all-domains view, show tag chips inline under each category header
+    const domainTags = allTagsByDomain[cat.id] || [];
+    const tagChipsHtml = (activeTab === 'all' && domainTags.length)
+      ? `<div class="cat-tag-bar">${domainTags.map(t=>`<button class="cat-tag-chip${t===activeTag?' active':''}" onclick="toggleTagFromChip('${t}',this)">${t}</button>`).join('')}</div>`
+      : '';
+
+    block.innerHTML = `
+      <div class="cat-head">
+        <div><div class="cat-num">${cat.n}</div><div class="cat-name">${cat.label}</div></div>
+        <span class="cat-count">${items.length} ${items.length===1?'text':'texts'}</span>
+      </div>
+      <p class="cat-desc">${cat.desc}</p>
+      ${tagChipsHtml}
+      <div class="cat-rule"></div>`;
+
     if (items.length) {
       const grid = document.createElement('div'); grid.className = 'pdf-grid';
       items.forEach(item => grid.appendChild(makeCard(item)));
       block.appendChild(grid);
     } else {
-      block.innerHTML += `<p class="empty-note">No texts archived in this domain yet.</p>`;
+      const emptyMsg = activeTag
+        ? `<p class="empty-note">No texts tagged "${activeTag}" in this domain.</p>`
+        : `<p class="empty-note">No texts archived in this domain yet.</p>`;
+      block.innerHTML += emptyMsg;
     }
     main.appendChild(block);
   });
 }
 
+function toggleTagFromChip(tag, btn) {
+  // Keep tag nav bar and chips in sync
+  toggleTag(tag, null);
+  // Re-highlight chips
+  document.querySelectorAll('.cat-tag-chip').forEach(c => {
+    c.classList.toggle('active', c.textContent === activeTag);
+  });
+  document.querySelectorAll('.ttab').forEach(t => {
+    t.classList.toggle('active', t.textContent === activeTag);
+  });
+}
+
+// ── CARD ──────────────────────────────────────────────────────────────────
 function makeCard(item) {
   const card = document.createElement('div'); card.className = 'pdf-card';
-  const cat = CATS.find(c => c.id === item.category);
-  const tags = (item.tags || []).slice(0, 3).map(t => `<span class="tag">${t}</span>`).join('');
+  const cat  = CATS.find(c=>c.id===item.category);
+  const tags = (item.tags||[]).slice(0,3).map(t=>`<span class="tag">${t}</span>`).join('');
   card.innerHTML = `
-    <div class="card-cover">${item.cover_svg || defaultCover(item.title, cat)}<div class="card-overlay"><span class="card-overlay-text">Open</span></div></div>
+    <div class="card-cover">${item.cover_svg||defaultCover(item.title,cat)}<div class="card-overlay"><span class="card-overlay-text">Open</span></div></div>
     <div class="card-body">
       <div class="card-icon-row">
         <div class="card-filebox ${item.pdf_url?'card-has-file':''}"></div>
@@ -434,26 +574,28 @@ function makeCard(item) {
   return card;
 }
 
-// ── DETAIL ───────────────────────────────────────────────────────────────────
-async function openDetail(id) {
-  const item = allEntries.find(e => e.id === id); if (!item) return;
-  const cat = CATS.find(c => c.id === item.category);
-  const tags = (item.tags || []).map(t => `<span class="tag" style="font-size:.66rem;padding:.18rem .6rem">${t}</span>`).join('');
+// ── DETAIL ────────────────────────────────────────────────────────────────
+function openDetail(id) {
+  const item = allEntries.find(e=>e.id===id); if(!item) return;
+  const cat  = CATS.find(c=>c.id===item.category);
+  const tags = (item.tags||[]).map(t=>`<span class="detail-tag-link" onclick="jumpToTag('${t}','${item.category}')">${t}</span>`).join('');
   const pdfSec = item.pdf_url
     ? `<iframe class="detail-pdf-frame" src="${item.pdf_url}"></iframe>`
     : `<div class="detail-no-pdf"><p>No PDF attached to this entry yet.</p></div>`;
   const aiNote = item.note ? `<div class="detail-rule"></div><div class="ai-badge">AI-generated scholarly note</div><div class="section-label">Scholarly Note</div><p class="detail-note">${item.note}</p>` : '';
+
   document.getElementById('detailLayout').innerHTML = `
     <div class="detail-layout">
       <div>
-        <div class="detail-cover-art">${item.cover_svg || defaultCover(item.title, cat)}</div>
+        <div class="detail-cover-art">${item.cover_svg||defaultCover(item.title,cat)}</div>
         <span class="detail-badge">${cat?.n} · ${cat?.label}</span>
         ${item.language?`<span class="detail-lang-badge">${item.language}</span>`:''}
         <div class="detail-actions">
-          ${item.pdf_url?`<button class="btn-primary" onclick="window.open('${item.pdf_url}','_blank')">Read Online</button>
-          <button class="btn-secondary" onclick="window.open('${item.pdf_url}','_blank')">Download PDF</button>`
-          :`<button class="btn-primary" disabled>No PDF Attached</button>`}
-          ${isAdmin?`<button class="btn-secondary" onclick="editEntry('${item.id}');closeOverlayGoAdmin()">Edit Entry</button>
+          ${item.pdf_url
+            ?`<button class="btn-primary" onclick="window.open('${item.pdf_url}','_blank')">Read Online</button>
+              <button class="btn-secondary" onclick="window.open('${item.pdf_url}','_blank')">Download PDF</button>`
+            :`<button class="btn-primary" disabled>No PDF Attached</button>`}
+          ${isAdmin?`<button class="btn-secondary" onclick="editEntryFromDetail('${item.id}')">Edit Entry</button>
           <button class="btn-danger" onclick="confirmDelete('${item.id}')">Delete from Archive</button>`:''}
         </div>
       </div>
@@ -465,85 +607,90 @@ async function openDetail(id) {
         <div class="detail-rule"></div>
         ${item.summary?`<div class="ai-badge">AI-generated summary</div><div class="section-label">Summary</div><p class="detail-summary">${item.summary}</p>`:''}
         ${aiNote}
-        ${tags?`<div class="detail-rule"></div><div class="section-label">Subject Tags</div><div class="detail-tags-row">${tags}</div>`:''}
+        ${tags?`<div class="detail-rule"></div><div class="section-label">Subject Tags &amp; Subcategories</div><div class="detail-tags-row">${tags}</div>`:''}
         <div class="section-label" style="margin-top:1.4rem">Document</div>${pdfSec}
       </div>
     </div>`;
   showDetailView();
 }
 
-function closeOverlayGoAdmin() { goHome(); setTimeout(openAdminPanel, 100); }
+function jumpToTag(tag, catId) {
+  // Navigate to the domain and activate the tag filter
+  activeTag = tag;
+  const btn = document.querySelector(`.dtab[onclick*="${catId}"]`);
+  setTab(catId, btn || document.querySelector('.dtab'));
+}
 
-// ── SEARCH ───────────────────────────────────────────────────────────────────
+function editEntryFromDetail(id) { goHome(); setTimeout(() => { editEntry(id); openAdminPanel(); }, 100); }
+
+// ── SEARCH ────────────────────────────────────────────────────────────────
 async function onSearch(q) {
   clearTimeout(searchTimer);
   if (!q.trim()) { goHome(); return; }
   searchTimer = setTimeout(async () => {
     try {
-      const results = await api('GET', `/api/entries?q=${encodeURIComponent(q.trim())}`);
+      const results = await api('GET',`/api/entries?q=${encodeURIComponent(q.trim())}`);
       document.getElementById('searchHeader').innerHTML = `Results for <span>"${q.trim()}"</span> &nbsp;—&nbsp; ${results.length} ${results.length===1?'text':'texts'}`;
       const container = document.getElementById('searchResults');
-      if (!results.length) { container.innerHTML = `<p style="font-family:var(--body);font-style:italic;color:var(--text-dim)">No texts matched this query.</p>`; showSearchView(); return; }
-      const grid = document.createElement('div'); grid.className = 'pdf-grid';
-      results.forEach(item => grid.appendChild(makeCard(item)));
-      container.innerHTML = ''; container.appendChild(grid);
+      if (!results.length) { container.innerHTML=`<p style="font-family:var(--body);font-style:italic;color:var(--text-dim)">No texts matched this query.</p>`; showSearchView(); return; }
+      const grid = document.createElement('div'); grid.className='pdf-grid';
+      results.forEach(item=>grid.appendChild(makeCard(item)));
+      container.innerHTML=''; container.appendChild(grid);
       showSearchView();
-    } catch (err) { toast('Search failed: ' + err.message); }
+    } catch(err) { toast('Search failed: '+err.message); }
   }, 300);
 }
 
 function setTab(id, btn) {
-  activeTab = id;
-  document.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
+  activeTab = id; activeTag = '';
+  document.querySelectorAll('.dtab').forEach(t=>t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
   goHome();
 }
 
-// ── AUTH ─────────────────────────────────────────────────────────────────────
+// ── AUTH ──────────────────────────────────────────────────────────────────
 function openOverlay(id) { document.getElementById(id).classList.add('show'); }
 function closeOverlay(id) { document.getElementById(id).classList.remove('show'); }
 
 async function tryLogin() {
-  const pass = document.getElementById('passInput').value;
   try {
-    const { token } = await api('POST', '/api/auth/login', { passphrase: pass });
-    adminToken = token;
-    sessionStorage.setItem('au_admin_token', token);
-    isAdmin = true;
-    closeOverlay('loginOverlay');
-    document.getElementById('passInput').value = '';
-    document.getElementById('loginErr').style.display = 'none';
-    showAdminUI();
-    render();
-    toast('Logged in as administrator');
-  } catch {
-    document.getElementById('loginErr').style.display = 'block';
-  }
+    const {token} = await api('POST','/api/auth/login',{passphrase:document.getElementById('passInput').value});
+    adminToken = token; sessionStorage.setItem('au_admin_token',token);
+    isAdmin = true; closeOverlay('loginOverlay');
+    document.getElementById('passInput').value='';
+    document.getElementById('loginErr').style.display='none';
+    showAdminUI(); render(); toast('Logged in as administrator');
+  } catch { document.getElementById('loginErr').style.display='block'; }
 }
 
 function showAdminUI() {
-  document.getElementById('adminFab').style.display = 'block';
-  document.getElementById('loginBtn').textContent = 'Admin ✦';
-  document.getElementById('loginBtn').style.color = 'var(--gold-light)';
+  document.getElementById('adminFab').style.display='block';
+  document.getElementById('loginBtn').textContent='Admin ✦';
+  document.getElementById('loginBtn').style.color='var(--gold-light)';
 }
 
-// ── FILE ─────────────────────────────────────────────────────────────────────
+// ── FILE ──────────────────────────────────────────────────────────────────
 function onFileChosen(input) {
   currentFile = input.files[0];
   document.getElementById('fileLabel').textContent = currentFile ? currentFile.name : 'Choose PDF…';
 }
 
-// ── STEP HELPERS ─────────────────────────────────────────────────────────────
-function setStep(n, state) {
-  const el = document.getElementById('step' + n); el.className = 'proc-step ' + state;
+// ── STEP HELPERS ──────────────────────────────────────────────────────────
+function setStep(n, state, msg) {
+  const el   = document.getElementById('step'+n);
+  el.className = 'proc-step '+state;
   const icon = el.querySelector('.step-icon');
-  if (state === 'done') icon.textContent = '✓';
-  else if (state === 'error') icon.textContent = '✕';
-  else icon.textContent = n;
+  const msgEl = el.querySelector('.proc-step-msg');
+  if (state==='done')  icon.textContent='✓';
+  else if (state==='error') icon.textContent='✕';
+  else icon.textContent=n;
+  if (msg && msgEl) msgEl.textContent = msg;
 }
-const delay = ms => new Promise(r => setTimeout(r, ms));
+function setProgress(pct) {
+  document.getElementById('procBar').style.width = pct+'%';
+}
 
-// ── AI PROCESSING ─────────────────────────────────────────────────────────────
+// ── AI PROCESSING via SSE ─────────────────────────────────────────────────
 async function runAIProcessing() {
   const title = document.getElementById('addTitle').value.trim();
   if (!title) { alert('Please enter the title first.'); return; }
@@ -552,64 +699,123 @@ async function runAIProcessing() {
   document.getElementById('processingBox').classList.add('show');
   document.getElementById('aiPreview').classList.remove('show');
   document.getElementById('coverPreviewWrap').classList.remove('show');
-  document.getElementById('saveBtn').style.display = 'none';
-  [1,2,3,4,5].forEach(n => setStep(n, ''));
-  pendingCoverSvg = ''; pendingDomain = '';
+  document.getElementById('saveBtn').style.display='none';
+  [1,2,3,4,5].forEach(n=>setStep(n,'',''));
+  setProgress(0);
+  pendingCoverSvg='';
+  document.getElementById('procEta').textContent='';
+
+  const startTime = Date.now();
 
   try {
-    setStep(1, 'active');
+    setStep(1,'active','Uploading PDF to server…');
+    setProgress(5);
+
     const fd = new FormData();
     fd.append('pdf', currentFile);
     fd.append('title', title);
     fd.append('author', document.getElementById('addAuthor').value.trim());
-    fd.append('year', document.getElementById('addYear').value.trim());
+    fd.append('year',   document.getElementById('addYear').value.trim());
     fd.append('language', document.getElementById('addLang').value);
-    setStep(1, 'done'); setStep(2, 'active');
 
-    const result = await api('POST', '/api/process', fd, true);
-    setStep(2, 'done'); setStep(3, 'active');
-    await delay(200); setStep(3, 'done'); setStep(4, 'active');
-    await delay(200); setStep(4, 'done'); setStep(5, 'active');
-    await delay(150); setStep(5, 'done');
+    // Open SSE connection
+    const response = await fetch('/api/process', {
+      method: 'POST',
+      headers: { 'x-admin-token': adminToken },
+      body: fd,
+    });
 
-    pendingCoverSvg = result.coverSvg || '';
-    pendingDomain = result.domain || 'philosophy';
+    if (!response.ok) {
+      const e = await response.json().catch(()=>({}));
+      throw new Error(e.error||`HTTP ${response.status}`);
+    }
 
-    const cat = CATS.find(c => c.id === result.domain) || CATS[1];
+    setStep(1,'done'); setProgress(10);
+
+    // Read SSE stream
+    const reader  = response.body.getReader();
+    const decoder = new TextDecoder();
+    let   buffer  = '';
+    let   result  = null;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // keep incomplete line
+
+      for (const line of lines) {
+        if (!line.startsWith('data:')) continue;
+        try {
+          const evt = JSON.parse(line.slice(5).trim());
+          if (evt.type === 'progress') {
+            const pct = Math.round(10 + (evt.step / evt.total) * 85);
+            setProgress(pct);
+            // Map server steps to UI steps
+            const uiStep = Math.min(evt.step + 1, 5);
+            for (let i = 1; i < uiStep; i++) setStep(i,'done');
+            setStep(uiStep,'active', evt.message);
+            // Estimate time remaining
+            const elapsed = (Date.now()-startTime)/1000;
+            const totalEst = (elapsed / (evt.step/evt.total));
+            const remaining = Math.max(0, Math.round(totalEst - elapsed));
+            if (remaining > 5) document.getElementById('procEta').textContent = `~${remaining}s remaining`;
+          } else if (evt.type === 'complete') {
+            result = evt.result;
+          } else if (evt.type === 'error') {
+            throw new Error(evt.message);
+          }
+        } catch(parseErr) {
+          if (parseErr.message !== 'Unexpected end of JSON input') console.warn(parseErr);
+        }
+      }
+    }
+
+    if (!result) throw new Error('No result received from server');
+
+    [1,2,3,4,5].forEach(n=>setStep(n,'done'));
+    setProgress(100);
+    document.getElementById('procEta').textContent='';
+
+    // Populate preview
+    const cat = CATS.find(c=>c.id===result.domain)||CATS[1];
+    pendingCoverSvg = result.coverSvg||'';
     document.getElementById('previewDomain').textContent = `${cat.n} — ${cat.label}`;
-    document.getElementById('previewCat').value = cat.id;
-    document.getElementById('previewSummary').value = result.summary || '';
-    document.getElementById('previewNote').value = result.note || '';
-    document.getElementById('previewTags').value = (result.tags || []).join(', ');
+    document.getElementById('previewCat').value   = cat.id;
+    document.getElementById('previewSummary').value = result.summary||'';
+    document.getElementById('previewNote').value    = result.note||'';
+    document.getElementById('previewTags').value    = (result.tags||[]).join(', ');
 
     if (pendingCoverSvg) {
       document.getElementById('coverPreviewBox').innerHTML = pendingCoverSvg;
       document.getElementById('coverPreviewWrap').classList.add('show');
     }
     document.getElementById('aiPreview').classList.add('show');
-    document.getElementById('saveBtn').style.display = 'block';
-  } catch (err) {
-    [1,2,3,4,5].forEach(n => { if (document.getElementById('step'+n).className.includes('active')) setStep(n,'error'); });
-    alert('AI processing failed: ' + err.message);
+    document.getElementById('saveBtn').style.display='block';
+
+  } catch(err) {
+    [1,2,3,4,5].forEach(n=>{ if(document.getElementById('step'+n).className.includes('active')) setStep(n,'error'); });
+    document.getElementById('procEta').textContent='';
+    alert('AI processing failed: '+err.message);
+    console.error(err);
   }
 }
 
-// ── SAVE ─────────────────────────────────────────────────────────────────────
+// ── SAVE ──────────────────────────────────────────────────────────────────
 async function saveEntry() {
   const title = document.getElementById('addTitle').value.trim();
   if (!title) { alert('Title is required.'); return; }
-
   const meta = {
-    title, author: document.getElementById('addAuthor').value.trim(),
-    year: document.getElementById('addYear').value.trim(),
+    title, author:   document.getElementById('addAuthor').value.trim(),
+    year:     document.getElementById('addYear').value.trim(),
     language: document.getElementById('addLang').value,
     category: document.getElementById('previewCat').value,
-    summary: document.getElementById('previewSummary').value.trim(),
-    note: document.getElementById('previewNote').value.trim(),
-    tags: document.getElementById('previewTags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    summary:  document.getElementById('previewSummary').value.trim(),
+    note:     document.getElementById('previewNote').value.trim(),
+    tags:     document.getElementById('previewTags').value.split(',').map(t=>t.trim()).filter(Boolean),
     cover_svg: pendingCoverSvg,
   };
-
   await submitEntry(meta);
 }
 
@@ -620,8 +826,8 @@ async function saveEntryManual() {
     title, author: document.getElementById('addAuthor').value.trim(),
     year: document.getElementById('addYear').value.trim(),
     language: document.getElementById('addLang').value,
-    category: document.getElementById('previewCat').value || 'philosophy',
-    summary: '', note: '', tags: [], cover_svg: '',
+    category: document.getElementById('previewCat').value||'philosophy',
+    summary:'', note:'', tags:[], cover_svg:'',
   };
   await submitEntry(meta);
 }
@@ -631,90 +837,89 @@ async function submitEntry(meta) {
     const fd = new FormData();
     fd.append('data', JSON.stringify(meta));
     if (currentFile) fd.append('pdf', currentFile);
-
     let saved;
     if (editingId) {
-      saved = await api('PUT', `/api/entries/${editingId}`, fd, true);
-      allEntries = allEntries.map(e => e.id === editingId ? saved : e);
+      saved = await api('PUT',`/api/entries/${editingId}`,fd,true);
+      allEntries = allEntries.map(e=>e.id===editingId?saved:e);
       toast('Entry updated');
     } else {
-      saved = await api('POST', '/api/entries', fd, true);
+      saved = await api('POST','/api/entries',fd,true);
       allEntries.push(saved);
       toast('Text archived successfully');
     }
-
-    const stats = await api('GET', '/api/stats');
-    document.getElementById('statTexts').textContent = stats.total;
+    // Refresh tags
+    allTagsByDomain = await api('GET','/api/tags');
+    const stats = await api('GET','/api/stats');
+    document.getElementById('statTexts').textContent   = stats.total;
     document.getElementById('statDomains').textContent = stats.domains;
-
     resetAdminForm(); renderAdminList(); render();
     closeOverlay('adminOverlay');
-  } catch (err) {
-    alert('Save failed: ' + err.message);
-  }
+  } catch(err) { alert('Save failed: '+err.message); }
 }
 
-// ── DELETE ───────────────────────────────────────────────────────────────────
+// ── DELETE ────────────────────────────────────────────────────────────────
 async function confirmDelete(id) {
-  const item = allEntries.find(e => e.id === id); if (!item) return;
+  const item = allEntries.find(e=>e.id===id); if(!item) return;
   const msg = item.is_seed
-    ? `Remove "${item.title}" from the archive?\n\nThis is a canonical seed entry. It will be hidden.`
-    : `Remove "${item.title}" from the archive?\n\nThe PDF will also be deleted from storage. This cannot be undone.`;
+    ? `Remove "${item.title}" from the archive?\n\nThis is a canonical seed entry — it will be hidden.`
+    : `Remove "${item.title}"?\n\nThe PDF will be deleted from storage. This cannot be undone.`;
   if (!confirm(msg)) return;
   try {
-    await api('DELETE', `/api/entries/${id}`);
-    allEntries = allEntries.filter(e => e.id !== id);
-    const stats = await api('GET', '/api/stats');
-    document.getElementById('statTexts').textContent = stats.total;
+    await api('DELETE',`/api/entries/${id}`);
+    allEntries = allEntries.filter(e=>e.id!==id);
+    allTagsByDomain = await api('GET','/api/tags');
+    const stats = await api('GET','/api/stats');
+    document.getElementById('statTexts').textContent   = stats.total;
     document.getElementById('statDomains').textContent = stats.domains;
     renderAdminList(); render();
     if (document.getElementById('view-detail').classList.contains('active')) goHome();
     toast('Entry removed from archive');
-  } catch (err) { alert('Delete failed: ' + err.message); }
+  } catch(err) { alert('Delete failed: '+err.message); }
 }
 
-// ── ADMIN PANEL ───────────────────────────────────────────────────────────────
-function openAdminPanel() { editingId = null; resetAdminForm(); renderAdminList(); openOverlay('adminOverlay'); }
+// ── ADMIN ─────────────────────────────────────────────────────────────────
+function openAdminPanel() { editingId=null; resetAdminForm(); renderAdminList(); openOverlay('adminOverlay'); }
 
 function editEntry(id) {
-  const item = allEntries.find(e => e.id === id); if (!item) return;
+  const item = allEntries.find(e=>e.id===id); if(!item) return;
   editingId = id;
   document.getElementById('adminPanelTitle').textContent = 'Edit Entry';
-  document.getElementById('addTitle').value = item.title || '';
-  document.getElementById('addAuthor').value = item.author || '';
-  document.getElementById('addYear').value = item.year || '';
-  document.getElementById('addLang').value = item.language || 'English';
-  document.getElementById('previewCat').value = item.category || 'philosophy';
-  document.getElementById('previewSummary').value = item.summary || '';
-  document.getElementById('previewNote').value = item.note || '';
-  document.getElementById('previewTags').value = (item.tags || []).join(', ');
-  const cat = CATS.find(c => c.id === item.category) || CATS[1];
+  document.getElementById('addTitle').value   = item.title||'';
+  document.getElementById('addAuthor').value  = item.author||'';
+  document.getElementById('addYear').value    = item.year||'';
+  document.getElementById('addLang').value    = item.language||'English';
+  document.getElementById('previewCat').value = item.category||'philosophy';
+  document.getElementById('previewSummary').value = item.summary||'';
+  document.getElementById('previewNote').value    = item.note||'';
+  document.getElementById('previewTags').value    = (item.tags||[]).join(', ');
+  const cat = CATS.find(c=>c.id===item.category)||CATS[1];
   document.getElementById('previewDomain').textContent = `${cat.n} — ${cat.label}`;
-  if (item.cover_svg) { pendingCoverSvg = item.cover_svg; document.getElementById('coverPreviewBox').innerHTML = item.cover_svg; document.getElementById('coverPreviewWrap').classList.add('show'); }
+  if (item.cover_svg) { pendingCoverSvg=item.cover_svg; document.getElementById('coverPreviewBox').innerHTML=item.cover_svg; document.getElementById('coverPreviewWrap').classList.add('show'); }
   document.getElementById('aiPreview').classList.add('show');
-  document.getElementById('saveBtn').style.display = 'block';
+  document.getElementById('saveBtn').style.display='block';
   renderAdminList(); openOverlay('adminOverlay');
 }
 
 function resetAdminForm() {
-  editingId = null; currentFile = null; pendingCoverSvg = ''; pendingDomain = '';
-  ['addTitle','addAuthor','addYear'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('addLang').value = 'English';
-  document.getElementById('addFile').value = '';
-  document.getElementById('fileLabel').textContent = 'Choose PDF…';
+  editingId=null; currentFile=null; pendingCoverSvg='';
+  ['addTitle','addAuthor','addYear'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('addLang').value='English';
+  document.getElementById('addFile').value='';
+  document.getElementById('fileLabel').textContent='Choose PDF…';
   document.getElementById('processingBox').classList.remove('show');
   document.getElementById('aiPreview').classList.remove('show');
   document.getElementById('coverPreviewWrap').classList.remove('show');
-  document.getElementById('saveBtn').style.display = 'none';
-  document.getElementById('adminPanelTitle').textContent = 'Add to the Archive';
-  [1,2,3,4,5].forEach(n => setStep(n, ''));
+  document.getElementById('saveBtn').style.display='none';
+  document.getElementById('adminPanelTitle').textContent='Add to the Archive';
+  document.getElementById('procBar').style.width='0';
+  [1,2,3,4,5].forEach(n=>setStep(n,'',''));
 }
 
 function renderAdminList() {
   const list = document.getElementById('adminEntries');
-  if (!allEntries.length) { list.innerHTML = ''; return; }
-  list.innerHTML = `<div class="entries-table-title">All Archive Entries (${allEntries.length})</div>` +
-    allEntries.map(e => `<div class="entry-row">
+  if (!allEntries.length) { list.innerHTML=''; return; }
+  list.innerHTML = `<div class="entries-table-title">All Archive Entries (${allEntries.length})</div>`+
+    allEntries.map(e=>`<div class="entry-row">
       <span class="entry-row-title">${e.title}</span>
       <span class="entry-row-cat">${CATS.find(c=>c.id===e.category)?.n||''}</span>
       <div class="entry-row-btns">
@@ -724,15 +929,14 @@ function renderAdminList() {
     </div>`).join('');
 }
 
-// ── TOAST ────────────────────────────────────────────────────────────────────
+// ── UTILS ─────────────────────────────────────────────────────────────────
 function toast(msg) {
-  const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2800);
+  const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),2800);
 }
 
-// ── FALLBACK COVER ────────────────────────────────────────────────────────────
 function defaultCover(title, cat) {
-  const short = (title||'').length > 18 ? title.slice(0,16)+'…' : (title||'');
+  const short=(title||'').length>18?title.slice(0,16)+'…':(title||'');
   return `<svg viewBox="0 0 200 267" xmlns="http://www.w3.org/2000/svg">
     <rect width="200" height="267" fill="#0f0d0b"/>
     <rect x="8" y="8" width="184" height="251" fill="none" stroke="#c9a84c" stroke-width="0.4" opacity="0.3"/>
@@ -744,7 +948,7 @@ function defaultCover(title, cat) {
   </svg>`;
 }
 
-document.addEventListener('keydown', e => { if (e.key==='Escape') document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show')); });
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'));});
 boot();
 </script>
 </body>
