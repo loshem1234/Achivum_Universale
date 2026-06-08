@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archivum Universale</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --deep:#0f0d0b;--surface:#181410;--surface2:#201b15;--surface3:#2a231b;
+  --gold:#c9a84c;--gold-light:#e2c46a;--gold-dim:#7a5f28;
+  --gold-glow:rgba(201,168,76,0.10);--gold-glow2:rgba(201,168,76,0.18);
+  --text:#ede4cc;--text-muted:#a09070;--text-dim:#60503a;
+  --border:rgba(201,168,76,0.13);--border-med:rgba(201,168,76,0.25);--border-hi:rgba(201,168,76,0.40);
+  --serif:'Cormorant Garamond',Georgia,serif;--title:'Cinzel',serif;--body:'EB Garamond',Georgia,serif;
+  --radius:2px;
+}
+html,body{height:100%;background:var(--deep);color:var(--text);font-family:var(--serif);font-size:16px;line-height:1.65}
+body{min-height:100vh;overflow-x:hidden}
+a{color:inherit;text-decoration:none}button{cursor:pointer}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--deep)}::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:2px}
+nav{position:sticky;top:0;z-index:100;background:rgba(15,13,11,0.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:0 2.5rem;display:flex;align-items:center;justify-content:space-between;height:62px;gap:1rem}
+.nav-brand{font-family:var(--title);font-size:1rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;flex-shrink:0;cursor:pointer}
+.nav-brand small{color:var(--text-dim);font-size:.58rem;display:block;letter-spacing:.3em;font-family:var(--serif);font-weight:300;margin-top:2px}
+.nav-center{flex:1;display:flex;justify-content:center}
+.nav-search-wrap{position:relative;width:320px}
+.nav-search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);opacity:.4;pointer-events:none}
+.nav-search{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:.38rem 1rem .38rem 2.2rem;font-family:var(--serif);font-size:.85rem;border-radius:var(--radius);outline:none;transition:border-color .2s}
+.nav-search::placeholder{color:var(--text-dim)}.nav-search:focus{border-color:var(--border-med)}
+.nav-right{display:flex;align-items:center;gap:1rem;flex-shrink:0}
+.btn-ghost{background:transparent;border:1px solid var(--gold-dim);color:var(--gold);font-family:var(--title);font-size:.62rem;letter-spacing:.16em;padding:.42rem 1.1rem;text-transform:uppercase;transition:all .2s;border-radius:var(--radius)}
+.btn-ghost:hover{background:var(--gold-glow);border-color:var(--gold)}
+.domain-nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 2.5rem;display:flex;align-items:stretch;overflow-x:auto;scrollbar-width:none}
+.domain-nav::-webkit-scrollbar{display:none}
+.dtab{background:none;border:none;border-bottom:2px solid transparent;color:var(--text-dim);font-family:var(--serif);font-size:.78rem;letter-spacing:.07em;padding:.85rem 1.1rem;white-space:nowrap;transition:all .2s;flex-shrink:0}
+.dtab:hover{color:var(--text-muted)}.dtab.active{color:var(--gold-light);border-bottom-color:var(--gold)}
+.dtab-all{font-family:var(--title);font-size:.64rem;letter-spacing:.14em;text-transform:uppercase}
+.view{display:none}.view.active{display:block}
+.hero{position:relative;padding:4rem 2.5rem 2.8rem;text-align:center;border-bottom:1px solid var(--border)}
+.hero-line{width:160px;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);margin:0 auto}
+.hero-orn{font-family:var(--serif);color:var(--gold-dim);font-size:.9rem;letter-spacing:.7em;margin:.9rem 0 .7rem;opacity:.6}
+.hero h1{font-family:var(--title);font-size:clamp(1.8rem,4vw,3rem);font-weight:500;letter-spacing:.14em;color:var(--gold-light);line-height:1.08;text-transform:uppercase;margin-bottom:.6rem}
+.hero-sub{font-family:var(--body);font-size:1rem;color:var(--text-muted);font-style:italic;max-width:540px;margin:0 auto 1rem}
+.hero-rule{width:45px;height:1px;background:var(--gold-dim);margin:.8rem auto}
+.hero-tag{font-family:var(--serif);font-size:.7rem;letter-spacing:.35em;color:var(--text-dim);text-transform:uppercase}
+.hero-stats{display:flex;justify-content:center;gap:3rem;margin-top:1.8rem;padding-top:1.4rem;border-top:1px solid var(--border)}
+.stat-item{text-align:center}.stat-n{font-family:var(--title);font-size:1.5rem;color:var(--gold);letter-spacing:.05em}
+.stat-l{font-family:var(--serif);font-size:.65rem;letter-spacing:.25em;color:var(--text-dim);text-transform:uppercase;margin-top:2px}
+main{padding:2.5rem;max-width:1440px;margin:0 auto}
+.cat-block{margin-bottom:3.5rem;animation:fadeUp .35s ease both}
+.cat-head{display:flex;align-items:flex-end;gap:1.2rem;margin-bottom:.4rem}
+.cat-num{font-family:var(--title);font-size:.6rem;color:var(--gold-dim);letter-spacing:.25em;margin-bottom:3px}
+.cat-name{font-family:var(--title);font-size:1rem;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;font-weight:400}
+.cat-count{margin-left:auto;font-family:var(--serif);font-size:.7rem;color:var(--text-dim);margin-bottom:3px}
+.cat-desc{font-family:var(--body);font-size:.87rem;color:var(--text-dim);font-style:italic;max-width:700px;margin-bottom:1.2rem;line-height:1.6}
+.cat-rule{height:1px;background:var(--border);margin-bottom:1.4rem}
+.pdf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1px;background:var(--border)}
+.pdf-card{background:var(--surface);transition:background .18s;display:flex;flex-direction:column;cursor:pointer;position:relative;overflow:hidden}
+.pdf-card:hover{background:var(--surface2)}.pdf-card:hover .card-action-row{opacity:1}.pdf-card:hover .card-overlay{opacity:1}
+.card-cover{width:100%;aspect-ratio:3/4;overflow:hidden;position:relative;background:var(--surface3);flex-shrink:0}
+.card-cover svg{width:100%;height:100%;display:block}
+.card-overlay{position:absolute;inset:0;background:rgba(15,13,11,0.7);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+.card-overlay-text{font-family:var(--title);font-size:.6rem;letter-spacing:.2em;color:var(--gold-light);text-transform:uppercase}
+.card-body{padding:1rem .95rem .85rem;display:flex;flex-direction:column;gap:.35rem;flex:1}
+.card-icon-row{display:flex;align-items:center;gap:.5rem}
+.card-filebox{width:20px;height:26px;border:1px solid var(--gold-dim);flex-shrink:0;position:relative;background:var(--surface3)}
+.card-filebox::after{content:'PDF';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:.4rem;letter-spacing:.06em;color:var(--gold-dim);font-family:var(--title)}
+.card-has-file{border-color:var(--gold);background:rgba(201,168,76,0.07)}.card-has-file::after{color:var(--gold)}
+.card-domain-tag{font-family:var(--serif);font-size:.58rem;letter-spacing:.1em;color:var(--text-dim);text-transform:uppercase}
+.card-lang{font-family:var(--serif);font-size:.58rem;color:var(--text-dim);margin-left:auto;font-style:italic}
+.card-title{font-family:var(--body);font-size:.9rem;color:var(--text);line-height:1.35;flex:1;font-weight:500}
+.card-author{font-family:var(--serif);font-size:.72rem;color:var(--text-muted);font-style:italic}
+.card-year{font-family:var(--serif);font-size:.64rem;color:var(--text-dim)}
+.card-tags{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.1rem}
+.tag{font-family:var(--serif);font-size:.56rem;letter-spacing:.07em;color:var(--gold-dim);border:1px solid rgba(201,168,76,0.18);padding:.06rem .42rem;border-radius:1px;text-transform:uppercase}
+.card-action-row{display:flex;gap:.35rem;margin-top:.4rem;opacity:0;transition:opacity .18s}
+.card-btn{background:none;border:1px solid var(--border);color:var(--gold);font-family:var(--title);font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;padding:.2rem .48rem;transition:all .15s}
+.card-btn:hover{background:var(--gold-glow2);border-color:var(--border-med)}.card-btn.del:hover{color:#c05050;border-color:rgba(192,80,80,0.35)}
+.empty-note{font-family:var(--body);font-size:.87rem;color:var(--text-dim);font-style:italic;padding:.3rem 0}
+.detail-back{display:flex;align-items:center;gap:.5rem;font-family:var(--serif);font-size:.78rem;letter-spacing:.1em;color:var(--text-dim);text-transform:uppercase;cursor:pointer;transition:color .2s;margin-bottom:2rem}
+.detail-back:hover{color:var(--gold)}
+.detail-layout{display:grid;grid-template-columns:280px 1fr;gap:2.8rem;align-items:start;animation:fadeUp .3s ease both}
+.detail-cover-art{width:100%;aspect-ratio:3/4;background:var(--surface2);border:1px solid var(--border);overflow:hidden;margin-bottom:1.1rem}
+.detail-cover-art svg{width:100%;height:100%;display:block}
+.detail-badge{display:inline-block;font-family:var(--title);font-size:.56rem;letter-spacing:.18em;color:var(--gold-dim);border:1px solid var(--border);padding:.28rem .75rem;text-transform:uppercase;margin-bottom:.8rem}
+.detail-lang-badge{display:inline-block;font-family:var(--serif);font-size:.62rem;color:var(--text-dim);border:1px solid var(--border);padding:.2rem .6rem;margin-left:.4rem;font-style:italic}
+.detail-actions{display:flex;flex-direction:column;gap:.5rem;margin-top:.8rem}
+.btn-primary{width:100%;background:var(--gold-glow2);border:1px solid var(--gold);color:var(--gold-light);font-family:var(--title);font-size:.62rem;letter-spacing:.18em;padding:.62rem;text-transform:uppercase;transition:all .2s}
+.btn-primary:hover{background:rgba(201,168,76,0.26)}.btn-primary:disabled{opacity:.35;cursor:default}
+.btn-secondary{width:100%;background:transparent;border:1px solid var(--border-med);color:var(--text-muted);font-family:var(--title);font-size:.62rem;letter-spacing:.18em;padding:.62rem;text-transform:uppercase;transition:all .2s}
+.btn-secondary:hover{border-color:var(--border-hi);color:var(--text)}
+.btn-danger{width:100%;background:transparent;border:1px solid rgba(176,64,64,0.3);color:#a05050;font-family:var(--title);font-size:.62rem;letter-spacing:.18em;padding:.62rem;text-transform:uppercase;transition:all .2s}
+.btn-danger:hover{background:rgba(176,64,64,0.1);border-color:rgba(176,64,64,0.5)}
+.detail-num{font-family:var(--title);font-size:.58rem;letter-spacing:.3em;color:var(--gold-dim);margin-bottom:.35rem}
+.detail-title{font-family:var(--title);font-size:clamp(1.2rem,2.3vw,1.9rem);font-weight:400;letter-spacing:.08em;color:var(--gold-light);text-transform:uppercase;line-height:1.15;margin-bottom:.45rem}
+.detail-author{font-family:var(--body);font-size:1.05rem;font-style:italic;color:var(--text-muted);margin-bottom:.25rem}
+.detail-year{font-family:var(--serif);font-size:.78rem;color:var(--text-dim);margin-bottom:1.2rem}
+.detail-rule{height:1px;background:var(--border);margin:1.1rem 0}
+.section-label{font-family:var(--title);font-size:.58rem;letter-spacing:.25em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:.55rem}
+.detail-summary{font-family:var(--body);font-size:1rem;color:var(--text);line-height:1.75;margin-bottom:.8rem}
+.detail-note{font-family:var(--body);font-size:.9rem;color:var(--text-muted);font-style:italic;line-height:1.8}
+.detail-tags-row{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.4rem}
+.detail-pdf-frame{margin-top:1.2rem;width:100%;height:580px;border:1px solid var(--border);background:#fff}
+.detail-no-pdf{padding:2.5rem;text-align:center;background:var(--surface2);border:1px solid var(--border);margin-top:1.2rem}
+.detail-no-pdf p{font-family:var(--body);font-style:italic;color:var(--text-dim);font-size:.88rem}
+.ai-badge{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--serif);font-size:.65rem;color:var(--gold-dim);letter-spacing:.08em;margin-bottom:.5rem;opacity:.7}
+.ai-badge::before{content:'✦';font-size:.6rem}
+.search-header{font-family:var(--title);font-size:.68rem;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;margin-bottom:1.4rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
+.search-header span{color:var(--gold)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(8,6,4,0.92);z-index:200;align-items:flex-start;justify-content:center;overflow-y:auto;padding:2rem}
+.overlay.show{display:flex}
+.panel{background:var(--surface);border:1px solid var(--border-hi);padding:2.2rem;width:580px;max-width:95vw;position:relative;margin:auto}
+.panel-title{font-family:var(--title);font-size:.78rem;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:1.6rem;padding-bottom:.7rem;border-bottom:1px solid var(--border)}
+.close-btn{position:absolute;top:.9rem;right:1.1rem;background:none;border:none;color:var(--text-dim);font-size:1rem;transition:color .2s;padding:.2rem .4rem}
+.close-btn:hover{color:var(--gold)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.form-group{margin-bottom:.9rem}
+.form-group label{display:block;font-family:var(--serif);font-size:.68rem;letter-spacing:.16em;color:var(--text-muted);text-transform:uppercase;margin-bottom:.3rem}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--deep);border:1px solid var(--border-med);color:var(--text);font-family:var(--serif);font-size:.9rem;padding:.48rem .72rem;outline:none;transition:border-color .2s;border-radius:var(--radius)}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--gold)}
+.form-group select option{background:var(--deep);color:var(--text)}
+.form-group textarea{resize:vertical;min-height:72px;line-height:1.6}
+.form-hint{font-family:var(--serif);font-size:.68rem;color:var(--text-dim);margin-top:.2rem;font-style:italic}
+#loginErr{margin-top:.7rem;font-size:.76rem;color:#b04040;font-family:var(--serif);display:none}
+.login-panel{text-align:center;width:340px}
+.login-orn{font-size:1.4rem;color:var(--gold-dim);margin-bottom:.5rem}
+.login-sub{font-family:var(--body);font-style:italic;font-size:.86rem;color:var(--text-muted);margin-bottom:1.3rem}
+.processing-box{background:var(--surface2);border:1px solid var(--border-med);padding:1.3rem;margin:1rem 0;display:none}
+.processing-box.show{display:block}
+.proc-title{font-family:var(--title);font-size:.64rem;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:.9rem}
+.proc-steps{display:flex;flex-direction:column;gap:.55rem}
+.proc-step{display:flex;align-items:center;gap:.75rem;font-family:var(--serif);font-size:.8rem;color:var(--text-dim)}
+.proc-step.done{color:var(--text-muted)}.proc-step.active{color:var(--gold-light)}.proc-step.error{color:#b04040}
+.step-icon{width:18px;height:18px;border:1px solid var(--border-med);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.58rem;flex-shrink:0}
+.proc-step.done .step-icon{background:rgba(106,154,90,0.18);border-color:rgba(106,154,90,0.5);color:#6a9a5a}
+.proc-step.active .step-icon{background:var(--gold-glow2);border-color:var(--gold);animation:pulse 1s ease infinite}
+.proc-step.error .step-icon{background:rgba(176,64,64,0.2);border-color:rgba(176,64,64,0.4)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.cover-preview-wrap{margin-bottom:.8rem;display:none}.cover-preview-wrap.show{display:block}
+.cover-preview-label{font-family:var(--serif);font-size:.66rem;letter-spacing:.14em;color:var(--text-dim);text-transform:uppercase;margin-bottom:.4rem}
+.cover-preview-box{width:100px;height:133px;border:1px solid var(--border-med);overflow:hidden;background:var(--surface3)}
+.cover-preview-box svg{width:100%;height:100%;display:block}
+.ai-preview{background:var(--deep);border:1px solid var(--border);padding:1.2rem;margin:.9rem 0;display:none}.ai-preview.show{display:block}
+.ai-preview-title{font-family:var(--title);font-size:.6rem;letter-spacing:.2em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:.8rem}
+.ai-field{margin-bottom:.8rem}
+.ai-field label{font-family:var(--serif);font-size:.66rem;letter-spacing:.14em;color:var(--text-dim);text-transform:uppercase;display:block;margin-bottom:.22rem}
+.ai-field textarea,.ai-field input,.ai-field select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--body);font-size:.86rem;padding:.45rem .68rem;outline:none;border-radius:var(--radius)}
+.ai-field textarea{resize:vertical;min-height:65px;line-height:1.6;font-style:italic}
+.ai-field input,.ai-field select{font-family:var(--serif);font-style:normal}
+.ai-field select option{background:var(--deep)}
+.ai-domain-val{font-family:var(--title);font-size:.72rem;letter-spacing:.1em;color:var(--gold-light)}
+.entries-table{margin-top:1.3rem;border-top:1px solid var(--border);padding-top:.8rem}
+.entries-table-title{font-family:var(--serif);font-size:.66rem;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;margin-bottom:.65rem}
+.entry-row{display:flex;align-items:center;gap:.65rem;padding:.42rem 0;border-bottom:1px solid rgba(201,168,76,0.06)}
+.entry-row-title{flex:1;font-family:var(--serif);font-size:.78rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.entry-row-cat{font-family:var(--serif);font-size:.65rem;color:var(--text-dim);white-space:nowrap}
+.entry-row-btns{display:flex;gap:.32rem;flex-shrink:0}
+.row-btn{background:none;border:1px solid var(--border);color:var(--text-dim);font-family:var(--serif);font-size:.65rem;padding:.15rem .48rem;transition:all .15s;border-radius:var(--radius)}
+.row-btn:hover{color:var(--gold);border-color:var(--border-med)}.row-btn.del:hover{color:#b04040;border-color:rgba(176,64,64,0.4)}
+.admin-fab{position:fixed;bottom:2rem;right:2rem;background:var(--surface3);border:1px solid var(--gold-dim);color:var(--gold);font-family:var(--title);font-size:.6rem;letter-spacing:.18em;padding:.7rem 1.4rem;text-transform:uppercase;z-index:50;transition:all .2s;border-radius:var(--radius);display:none;box-shadow:0 4px 20px rgba(0,0,0,0.4)}
+.admin-fab:hover{background:var(--gold-glow2);border-color:var(--gold)}
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--surface3);border:1px solid var(--border-med);color:var(--text-muted);font-family:var(--serif);font-size:.8rem;padding:.6rem 1.4rem;border-radius:var(--radius);z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+footer{border-top:1px solid var(--border);padding:1.6rem 2.5rem;text-align:center;position:relative;margin-top:2rem}
+footer::before{content:'';position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:100px;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent)}
+.footer-text{font-family:var(--serif);font-size:.68rem;color:var(--text-dim);letter-spacing:.2em}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand" onclick="goHome()">Archivum Universale<small>Universal Archive of Knowledge</small></div>
+  <div class="nav-center">
+    <div class="nav-search-wrap">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="nav-search" type="search" id="searchInput" placeholder="Search titles, authors, tags…" oninput="onSearch(this.value)">
+    </div>
+  </div>
+  <div class="nav-right">
+    <button class="btn-ghost" id="loginBtn" onclick="openOverlay('loginOverlay')">Enter</button>
+  </div>
+</nav>
+
+<div class="domain-nav" id="domainNav">
+  <button class="dtab dtab-all active" onclick="setTab('all',this)">All Domains</button>
+  <button class="dtab" onclick="setTab('esotericism',this)">I · Esotericism</button>
+  <button class="dtab" onclick="setTab('philosophy',this)">II · Philosophy</button>
+  <button class="dtab" onclick="setTab('psychology',this)">III · Psychology</button>
+  <button class="dtab" onclick="setTab('religion',this)">IV · Religion</button>
+  <button class="dtab" onclick="setTab('social-sciences',this)">V · Social Sciences</button>
+  <button class="dtab" onclick="setTab('arts',this)">VI · Arts</button>
+  <button class="dtab" onclick="setTab('natural-sciences',this)">VII · Natural Sciences</button>
+  <button class="dtab" onclick="setTab('formal-sciences',this)">VIII · Formal Sciences</button>
+  <button class="dtab" onclick="setTab('applied-science',this)">IX · Applied Science</button>
+  <button class="dtab" onclick="setTab('hct',this)">X · History · Culture · Technology</button>
+</div>
+
+<div class="view active" id="view-home">
+  <div class="hero">
+    <div class="hero-line"></div>
+    <div class="hero-orn">⸻ ✦ ⸻</div>
+    <h1>Archivum Universale</h1>
+    <div class="hero-rule"></div>
+    <p class="hero-sub">A curated repository of primary texts, treatises, and foundational works across the ten universal domains of human inquiry.</p>
+    <div class="hero-tag">Free to browse &nbsp;·&nbsp; Preserved for inquiry &nbsp;·&nbsp; Dayton, Ohio</div>
+    <div class="hero-stats">
+      <div class="stat-item"><div class="stat-n" id="statTexts">—</div><div class="stat-l">Texts</div></div>
+      <div class="stat-item"><div class="stat-n">10</div><div class="stat-l">Domains</div></div>
+      <div class="stat-item"><div class="stat-n" id="statDomains">—</div><div class="stat-l">Populated</div></div>
+    </div>
+  </div>
+  <main id="mainContent"><div style="text-align:center;padding:4rem;font-family:var(--body);font-style:italic;color:var(--text-dim)">Loading the archive…</div></main>
+</div>
+
+<div class="view" id="view-detail">
+  <main style="max-width:1060px;margin:0 auto;padding:2.5rem">
+    <div class="detail-back" onclick="goHome()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+      Back to Archive
+    </div>
+    <div id="detailLayout"></div>
+  </main>
+</div>
+
+<div class="view" id="view-search">
+  <main style="max-width:1100px;margin:0 auto;padding:2.5rem">
+    <div class="search-header" id="searchHeader"></div>
+    <div id="searchResults"></div>
+  </main>
+</div>
+
+<footer><p class="footer-text">Archivum Universale &nbsp;✦&nbsp; Dayton, Ohio &nbsp;✦&nbsp; All texts archived for scholarly inquiry</p></footer>
+
+<button class="admin-fab" id="adminFab" onclick="openAdminPanel()">+ Add Text</button>
+<div class="toast" id="toast"></div>
+
+<!-- LOGIN -->
+<div class="overlay" id="loginOverlay">
+  <div class="panel login-panel">
+    <button class="close-btn" onclick="closeOverlay('loginOverlay')">✕</button>
+    <div class="login-orn">✦</div>
+    <div class="panel-title" style="border:none;padding:0;margin-bottom:.35rem">Administrator Access</div>
+    <p class="login-sub">Enter the passphrase to access the archive's curatorial tools.</p>
+    <div class="form-group"><label>Passphrase</label><input type="password" id="passInput" placeholder="···" onkeydown="if(event.key==='Enter')tryLogin()"></div>
+    <button class="btn-primary" onclick="tryLogin()">Enter the Archive</button>
+    <p id="loginErr">Incorrect passphrase.</p>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="overlay" id="adminOverlay">
+  <div class="panel" style="width:600px">
+    <button class="close-btn" onclick="closeOverlay('adminOverlay')">✕</button>
+    <div class="panel-title" id="adminPanelTitle">Add to the Archive</div>
+    <div class="form-row">
+      <div class="form-group" style="grid-column:1/-1"><label>Title</label><input type="text" id="addTitle" placeholder="Full title of the work"></div>
+      <div class="form-group"><label>Author / Editor</label><input type="text" id="addAuthor" placeholder="Author or translator"></div>
+      <div class="form-group"><label>Year</label><input type="text" id="addYear" placeholder="e.g. 1781 or ~300 BC"></div>
+      <div class="form-group"><label>Language</label>
+        <select id="addLang"><option>English</option><option>Latin</option><option>Greek</option><option>German</option><option>French</option><option>Arabic</option><option>Sanskrit</option><option>Hebrew</option><option>Italian</option><option>Spanish</option><option>Other</option></select>
+      </div>
+      <div class="form-group">
+        <label>PDF File</label>
+        <label for="addFile" id="fileLabel" style="display:flex;align-items:center;gap:.5rem;background:var(--deep);border:1px solid var(--border-med);color:var(--text-muted);font-family:var(--serif);font-size:.82rem;padding:.48rem .72rem;cursor:pointer;border-radius:var(--radius)">Choose PDF…</label>
+        <input type="file" id="addFile" accept=".pdf" style="display:none" onchange="onFileChosen(this)">
+      </div>
+    </div>
+    <button class="btn-primary" onclick="runAIProcessing()" style="margin-bottom:.6rem">✦ &nbsp;Analyse &amp; Process with AI</button>
+    <div class="form-hint" style="margin-bottom:.85rem;margin-top:-.3rem">Reads the PDF on the server, generates description, scholarly note, domain, tags, and unique cover art.</div>
+    <div class="processing-box" id="processingBox">
+      <div class="proc-title">Processing</div>
+      <div class="proc-steps">
+        <div class="proc-step" id="step1"><div class="step-icon">1</div>Uploading PDF to server</div>
+        <div class="proc-step" id="step2"><div class="step-icon">2</div>AI analysis — generating metadata</div>
+        <div class="proc-step" id="step3"><div class="step-icon">3</div>Assigning domain &amp; tags</div>
+        <div class="proc-step" id="step4"><div class="step-icon">4</div>Generating tailored cover art</div>
+        <div class="proc-step" id="step5"><div class="step-icon">5</div>Ready for review</div>
+      </div>
+    </div>
+    <div class="cover-preview-wrap" id="coverPreviewWrap">
+      <div class="cover-preview-label">Generated Cover Art</div>
+      <div class="cover-preview-box" id="coverPreviewBox"></div>
+    </div>
+    <div class="ai-preview" id="aiPreview">
+      <div class="ai-preview-title">✦ &nbsp;AI Analysis — Review &amp; Edit Before Saving</div>
+      <div class="ai-field"><label>Assigned Domain</label><div class="ai-domain-val" id="previewDomain"></div></div>
+      <div class="ai-field"><label>Override Domain</label>
+        <select id="previewCat">
+          <option value="esotericism">I — Esotericism</option><option value="philosophy">II — Philosophy</option>
+          <option value="psychology">III — Psychology</option><option value="religion">IV — Religion</option>
+          <option value="social-sciences">V — Social Sciences</option><option value="arts">VI — Arts</option>
+          <option value="natural-sciences">VII — Natural Sciences</option><option value="formal-sciences">VIII — Formal Sciences</option>
+          <option value="applied-science">IX — Applied Science</option><option value="hct">X — History · Culture · Technology</option>
+        </select>
+      </div>
+      <div class="ai-field"><label>Summary</label><textarea id="previewSummary"></textarea></div>
+      <div class="ai-field"><label>Scholarly Note</label><textarea id="previewNote" style="min-height:90px"></textarea></div>
+      <div class="ai-field"><label>Tags <span style="color:var(--text-dim);font-size:.62rem">(comma-separated)</span></label><input type="text" id="previewTags"></div>
+    </div>
+    <button class="btn-primary" id="saveBtn" onclick="saveEntry()" style="display:none;margin-top:.4rem">Save to Archive</button>
+    <button class="btn-secondary" onclick="saveEntryManual()" style="margin-top:.5rem">Save Without AI Processing</button>
+    <div class="entries-table" id="adminEntries"></div>
+  </div>
+</div>
+
+<script>
+const CATS = [
+  {id:'esotericism',n:'I',label:'Esotericism',desc:'Works concerned with hidden knowledge, mystical traditions, occult philosophy, Hermeticism, Gnosticism, and alchemy — understood as serious alternative epistemologies of great philosophical weight.'},
+  {id:'philosophy',n:'II',label:'Philosophy',desc:'The foundational inquiries into being, knowledge, value, reason, and existence — metaphysics, epistemology, ethics, logic, and the philosophy of mind across all major traditions.'},
+  {id:'psychology',n:'III',label:'Psychology',desc:'The systematic study of the human psyche — its structures, dynamics, pathologies, and depths. From clinical work to depth psychology and transpersonal inquiry.'},
+  {id:'religion',n:'IV',label:'Religion',desc:'Sacred texts, theological treatises, and comparative studies — approached as serious intellectual and spiritual inheritances of the first order.'},
+  {id:'social-sciences',n:'V',label:'Social Sciences',desc:'Investigations into the structures and dynamics of human collective life — sociology, political science, economics, anthropology, and cultural theory.'},
+  {id:'arts',n:'VI',label:'Arts',desc:'Theory, criticism, and primary works in aesthetics, literature, music, architecture, and the visual arts — a mode of knowing equal in revelatory power to science.'},
+  {id:'natural-sciences',n:'VII',label:'Natural Sciences',desc:'Canonical works of physics, biology, chemistry, astronomy, and ecology — the human effort to comprehend the material cosmos through observation and synthesis.'},
+  {id:'formal-sciences',n:'VIII',label:'Formal Sciences',desc:'Mathematics, logic, statistics, and information theory — pure structure foundational to all inquiry, revealing the grammar underlying both nature and thought.'},
+  {id:'applied-science',n:'IX',label:'Applied Science',desc:'Engineering, medicine, technology, and the practical arts — where theoretical knowledge meets material consequence.'},
+  {id:'hct',n:'X',label:'History · Culture · Technology',desc:'A threefold domain: the human past, culture as a total way of life, and technology as civilizational force — situating present realities within long arcs of transformation.'},
+];
+
+let adminToken = sessionStorage.getItem('au_admin_token') || '';
+let isAdmin = false;
+let editingId = null;
+let currentFile = null;
+let pendingCoverSvg = '';
+let pendingDomain = '';
+let allEntries = [];
+let activeTab = 'all';
+let searchTimer = null;
+
+// ── API HELPERS ──────────────────────────────────────────────────────────────
+async function api(method, path, body, isFormData) {
+  const opts = { method, headers: {} };
+  if (adminToken) opts.headers['x-admin-token'] = adminToken;
+  if (body && !isFormData) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+  else if (body) opts.body = body;
+  const r = await fetch(path, opts);
+  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error || `HTTP ${r.status}`); }
+  return r.json();
+}
+
+// ── BOOT ─────────────────────────────────────────────────────────────────────
+async function boot() {
+  // Check if stored token is still valid
+  if (adminToken) {
+    try {
+      await api('GET', '/api/entries');
+      isAdmin = true;
+      showAdminUI();
+    } catch { adminToken = ''; sessionStorage.removeItem('au_admin_token'); }
+  }
+  await loadEntries();
+}
+
+async function loadEntries() {
+  try {
+    allEntries = await api('GET', '/api/entries');
+    const stats = await api('GET', '/api/stats');
+    document.getElementById('statTexts').textContent = stats.total;
+    document.getElementById('statDomains').textContent = stats.domains;
+    render();
+  } catch (err) {
+    document.getElementById('mainContent').innerHTML = `<p style="font-family:var(--body);font-style:italic;color:var(--text-dim);padding:3rem;text-align:center">Could not connect to the archive server. ${err.message}</p>`;
+  }
+}
+
+// ── VIEWS ────────────────────────────────────────────────────────────────────
+function goHome() {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-home').classList.add('active');
+  document.getElementById('domainNav').style.display = 'flex';
+  document.getElementById('searchInput').value = '';
+  window.scrollTo(0, 0);
+}
+function showDetailView() {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-detail').classList.add('active');
+  document.getElementById('domainNav').style.display = 'none';
+  window.scrollTo(0, 0);
+}
+function showSearchView() {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-search').classList.add('active');
+  document.getElementById('domainNav').style.display = 'flex';
+}
+
+// ── RENDER ───────────────────────────────────────────────────────────────────
+function render() {
+  const main = document.getElementById('mainContent');
+  main.innerHTML = '';
+  CATS.forEach((cat, idx) => {
+    if (activeTab !== 'all' && activeTab !== cat.id) return;
+    const items = allEntries.filter(e => e.category === cat.id);
+    if (activeTab === 'all' && !items.length) return;
+    const block = document.createElement('div');
+    block.className = 'cat-block';
+    block.style.animationDelay = (idx * .04) + 's';
+    block.innerHTML = `<div class="cat-head"><div><div class="cat-num">${cat.n}</div><div class="cat-name">${cat.label}</div></div><span class="cat-count">${items.length} ${items.length===1?'text':'texts'}</span></div><p class="cat-desc">${cat.desc}</p><div class="cat-rule"></div>`;
+    if (items.length) {
+      const grid = document.createElement('div'); grid.className = 'pdf-grid';
+      items.forEach(item => grid.appendChild(makeCard(item)));
+      block.appendChild(grid);
+    } else {
+      block.innerHTML += `<p class="empty-note">No texts archived in this domain yet.</p>`;
+    }
+    main.appendChild(block);
+  });
+}
+
+function makeCard(item) {
+  const card = document.createElement('div'); card.className = 'pdf-card';
+  const cat = CATS.find(c => c.id === item.category);
+  const tags = (item.tags || []).slice(0, 3).map(t => `<span class="tag">${t}</span>`).join('');
+  card.innerHTML = `
+    <div class="card-cover">${item.cover_svg || defaultCover(item.title, cat)}<div class="card-overlay"><span class="card-overlay-text">Open</span></div></div>
+    <div class="card-body">
+      <div class="card-icon-row">
+        <div class="card-filebox ${item.pdf_url?'card-has-file':''}"></div>
+        <span class="card-domain-tag">${cat?.n||''}</span>
+        ${item.language?`<span class="card-lang">${item.language}</span>`:''}
+      </div>
+      <div class="card-title">${item.title}</div>
+      <div class="card-author">${item.author||''}</div>
+      <div class="card-year">${item.year||''}</div>
+      ${tags?`<div class="card-tags">${tags}</div>`:''}
+      <div class="card-action-row">
+        <button class="card-btn" onclick="event.stopPropagation();openDetail('${item.id}')">View</button>
+        ${item.pdf_url?`<button class="card-btn" onclick="event.stopPropagation();window.open('${item.pdf_url}','_blank')">Download</button>`:''}
+        ${isAdmin?`<button class="card-btn del" onclick="event.stopPropagation();confirmDelete('${item.id}')">Delete</button>`:''}
+      </div>
+    </div>`;
+  card.onclick = () => openDetail(item.id);
+  return card;
+}
+
+// ── DETAIL ───────────────────────────────────────────────────────────────────
+async function openDetail(id) {
+  const item = allEntries.find(e => e.id === id); if (!item) return;
+  const cat = CATS.find(c => c.id === item.category);
+  const tags = (item.tags || []).map(t => `<span class="tag" style="font-size:.66rem;padding:.18rem .6rem">${t}</span>`).join('');
+  const pdfSec = item.pdf_url
+    ? `<iframe class="detail-pdf-frame" src="${item.pdf_url}"></iframe>`
+    : `<div class="detail-no-pdf"><p>No PDF attached to this entry yet.</p></div>`;
+  const aiNote = item.note ? `<div class="detail-rule"></div><div class="ai-badge">AI-generated scholarly note</div><div class="section-label">Scholarly Note</div><p class="detail-note">${item.note}</p>` : '';
+  document.getElementById('detailLayout').innerHTML = `
+    <div class="detail-layout">
+      <div>
+        <div class="detail-cover-art">${item.cover_svg || defaultCover(item.title, cat)}</div>
+        <span class="detail-badge">${cat?.n} · ${cat?.label}</span>
+        ${item.language?`<span class="detail-lang-badge">${item.language}</span>`:''}
+        <div class="detail-actions">
+          ${item.pdf_url?`<button class="btn-primary" onclick="window.open('${item.pdf_url}','_blank')">Read Online</button>
+          <button class="btn-secondary" onclick="window.open('${item.pdf_url}','_blank')">Download PDF</button>`
+          :`<button class="btn-primary" disabled>No PDF Attached</button>`}
+          ${isAdmin?`<button class="btn-secondary" onclick="editEntry('${item.id}');closeOverlayGoAdmin()">Edit Entry</button>
+          <button class="btn-danger" onclick="confirmDelete('${item.id}')">Delete from Archive</button>`:''}
+        </div>
+      </div>
+      <div>
+        <div class="detail-num">${cat?.n} · ${cat?.label}</div>
+        <div class="detail-title">${item.title}</div>
+        <div class="detail-author">${item.author||''}</div>
+        <div class="detail-year">${item.year||''}${item.language?' · '+item.language:''}</div>
+        <div class="detail-rule"></div>
+        ${item.summary?`<div class="ai-badge">AI-generated summary</div><div class="section-label">Summary</div><p class="detail-summary">${item.summary}</p>`:''}
+        ${aiNote}
+        ${tags?`<div class="detail-rule"></div><div class="section-label">Subject Tags</div><div class="detail-tags-row">${tags}</div>`:''}
+        <div class="section-label" style="margin-top:1.4rem">Document</div>${pdfSec}
+      </div>
+    </div>`;
+  showDetailView();
+}
+
+function closeOverlayGoAdmin() { goHome(); setTimeout(openAdminPanel, 100); }
+
+// ── SEARCH ───────────────────────────────────────────────────────────────────
+async function onSearch(q) {
+  clearTimeout(searchTimer);
+  if (!q.trim()) { goHome(); return; }
+  searchTimer = setTimeout(async () => {
+    try {
+      const results = await api('GET', `/api/entries?q=${encodeURIComponent(q.trim())}`);
+      document.getElementById('searchHeader').innerHTML = `Results for <span>"${q.trim()}"</span> &nbsp;—&nbsp; ${results.length} ${results.length===1?'text':'texts'}`;
+      const container = document.getElementById('searchResults');
+      if (!results.length) { container.innerHTML = `<p style="font-family:var(--body);font-style:italic;color:var(--text-dim)">No texts matched this query.</p>`; showSearchView(); return; }
+      const grid = document.createElement('div'); grid.className = 'pdf-grid';
+      results.forEach(item => grid.appendChild(makeCard(item)));
+      container.innerHTML = ''; container.appendChild(grid);
+      showSearchView();
+    } catch (err) { toast('Search failed: ' + err.message); }
+  }, 300);
+}
+
+function setTab(id, btn) {
+  activeTab = id;
+  document.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  goHome();
+}
+
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+function openOverlay(id) { document.getElementById(id).classList.add('show'); }
+function closeOverlay(id) { document.getElementById(id).classList.remove('show'); }
+
+async function tryLogin() {
+  const pass = document.getElementById('passInput').value;
+  try {
+    const { token } = await api('POST', '/api/auth/login', { passphrase: pass });
+    adminToken = token;
+    sessionStorage.setItem('au_admin_token', token);
+    isAdmin = true;
+    closeOverlay('loginOverlay');
+    document.getElementById('passInput').value = '';
+    document.getElementById('loginErr').style.display = 'none';
+    showAdminUI();
+    render();
+    toast('Logged in as administrator');
+  } catch {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+}
+
+function showAdminUI() {
+  document.getElementById('adminFab').style.display = 'block';
+  document.getElementById('loginBtn').textContent = 'Admin ✦';
+  document.getElementById('loginBtn').style.color = 'var(--gold-light)';
+}
+
+// ── FILE ─────────────────────────────────────────────────────────────────────
+function onFileChosen(input) {
+  currentFile = input.files[0];
+  document.getElementById('fileLabel').textContent = currentFile ? currentFile.name : 'Choose PDF…';
+}
+
+// ── STEP HELPERS ─────────────────────────────────────────────────────────────
+function setStep(n, state) {
+  const el = document.getElementById('step' + n); el.className = 'proc-step ' + state;
+  const icon = el.querySelector('.step-icon');
+  if (state === 'done') icon.textContent = '✓';
+  else if (state === 'error') icon.textContent = '✕';
+  else icon.textContent = n;
+}
+const delay = ms => new Promise(r => setTimeout(r, ms));
+
+// ── AI PROCESSING ─────────────────────────────────────────────────────────────
+async function runAIProcessing() {
+  const title = document.getElementById('addTitle').value.trim();
+  if (!title) { alert('Please enter the title first.'); return; }
+  if (!currentFile) { alert('Please choose a PDF file first.'); return; }
+
+  document.getElementById('processingBox').classList.add('show');
+  document.getElementById('aiPreview').classList.remove('show');
+  document.getElementById('coverPreviewWrap').classList.remove('show');
+  document.getElementById('saveBtn').style.display = 'none';
+  [1,2,3,4,5].forEach(n => setStep(n, ''));
+  pendingCoverSvg = ''; pendingDomain = '';
+
+  try {
+    setStep(1, 'active');
+    const fd = new FormData();
+    fd.append('pdf', currentFile);
+    fd.append('title', title);
+    fd.append('author', document.getElementById('addAuthor').value.trim());
+    fd.append('year', document.getElementById('addYear').value.trim());
+    fd.append('language', document.getElementById('addLang').value);
+    setStep(1, 'done'); setStep(2, 'active');
+
+    const result = await api('POST', '/api/process', fd, true);
+    setStep(2, 'done'); setStep(3, 'active');
+    await delay(200); setStep(3, 'done'); setStep(4, 'active');
+    await delay(200); setStep(4, 'done'); setStep(5, 'active');
+    await delay(150); setStep(5, 'done');
+
+    pendingCoverSvg = result.coverSvg || '';
+    pendingDomain = result.domain || 'philosophy';
+
+    const cat = CATS.find(c => c.id === result.domain) || CATS[1];
+    document.getElementById('previewDomain').textContent = `${cat.n} — ${cat.label}`;
+    document.getElementById('previewCat').value = cat.id;
+    document.getElementById('previewSummary').value = result.summary || '';
+    document.getElementById('previewNote').value = result.note || '';
+    document.getElementById('previewTags').value = (result.tags || []).join(', ');
+
+    if (pendingCoverSvg) {
+      document.getElementById('coverPreviewBox').innerHTML = pendingCoverSvg;
+      document.getElementById('coverPreviewWrap').classList.add('show');
+    }
+    document.getElementById('aiPreview').classList.add('show');
+    document.getElementById('saveBtn').style.display = 'block';
+  } catch (err) {
+    [1,2,3,4,5].forEach(n => { if (document.getElementById('step'+n).className.includes('active')) setStep(n,'error'); });
+    alert('AI processing failed: ' + err.message);
+  }
+}
+
+// ── SAVE ─────────────────────────────────────────────────────────────────────
+async function saveEntry() {
+  const title = document.getElementById('addTitle').value.trim();
+  if (!title) { alert('Title is required.'); return; }
+
+  const meta = {
+    title, author: document.getElementById('addAuthor').value.trim(),
+    year: document.getElementById('addYear').value.trim(),
+    language: document.getElementById('addLang').value,
+    category: document.getElementById('previewCat').value,
+    summary: document.getElementById('previewSummary').value.trim(),
+    note: document.getElementById('previewNote').value.trim(),
+    tags: document.getElementById('previewTags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    cover_svg: pendingCoverSvg,
+  };
+
+  await submitEntry(meta);
+}
+
+async function saveEntryManual() {
+  const title = document.getElementById('addTitle').value.trim();
+  if (!title) { alert('Title is required.'); return; }
+  const meta = {
+    title, author: document.getElementById('addAuthor').value.trim(),
+    year: document.getElementById('addYear').value.trim(),
+    language: document.getElementById('addLang').value,
+    category: document.getElementById('previewCat').value || 'philosophy',
+    summary: '', note: '', tags: [], cover_svg: '',
+  };
+  await submitEntry(meta);
+}
+
+async function submitEntry(meta) {
+  try {
+    const fd = new FormData();
+    fd.append('data', JSON.stringify(meta));
+    if (currentFile) fd.append('pdf', currentFile);
+
+    let saved;
+    if (editingId) {
+      saved = await api('PUT', `/api/entries/${editingId}`, fd, true);
+      allEntries = allEntries.map(e => e.id === editingId ? saved : e);
+      toast('Entry updated');
+    } else {
+      saved = await api('POST', '/api/entries', fd, true);
+      allEntries.push(saved);
+      toast('Text archived successfully');
+    }
+
+    const stats = await api('GET', '/api/stats');
+    document.getElementById('statTexts').textContent = stats.total;
+    document.getElementById('statDomains').textContent = stats.domains;
+
+    resetAdminForm(); renderAdminList(); render();
+    closeOverlay('adminOverlay');
+  } catch (err) {
+    alert('Save failed: ' + err.message);
+  }
+}
+
+// ── DELETE ───────────────────────────────────────────────────────────────────
+async function confirmDelete(id) {
+  const item = allEntries.find(e => e.id === id); if (!item) return;
+  const msg = item.is_seed
+    ? `Remove "${item.title}" from the archive?\n\nThis is a canonical seed entry. It will be hidden.`
+    : `Remove "${item.title}" from the archive?\n\nThe PDF will also be deleted from storage. This cannot be undone.`;
+  if (!confirm(msg)) return;
+  try {
+    await api('DELETE', `/api/entries/${id}`);
+    allEntries = allEntries.filter(e => e.id !== id);
+    const stats = await api('GET', '/api/stats');
+    document.getElementById('statTexts').textContent = stats.total;
+    document.getElementById('statDomains').textContent = stats.domains;
+    renderAdminList(); render();
+    if (document.getElementById('view-detail').classList.contains('active')) goHome();
+    toast('Entry removed from archive');
+  } catch (err) { alert('Delete failed: ' + err.message); }
+}
+
+// ── ADMIN PANEL ───────────────────────────────────────────────────────────────
+function openAdminPanel() { editingId = null; resetAdminForm(); renderAdminList(); openOverlay('adminOverlay'); }
+
+function editEntry(id) {
+  const item = allEntries.find(e => e.id === id); if (!item) return;
+  editingId = id;
+  document.getElementById('adminPanelTitle').textContent = 'Edit Entry';
+  document.getElementById('addTitle').value = item.title || '';
+  document.getElementById('addAuthor').value = item.author || '';
+  document.getElementById('addYear').value = item.year || '';
+  document.getElementById('addLang').value = item.language || 'English';
+  document.getElementById('previewCat').value = item.category || 'philosophy';
+  document.getElementById('previewSummary').value = item.summary || '';
+  document.getElementById('previewNote').value = item.note || '';
+  document.getElementById('previewTags').value = (item.tags || []).join(', ');
+  const cat = CATS.find(c => c.id === item.category) || CATS[1];
+  document.getElementById('previewDomain').textContent = `${cat.n} — ${cat.label}`;
+  if (item.cover_svg) { pendingCoverSvg = item.cover_svg; document.getElementById('coverPreviewBox').innerHTML = item.cover_svg; document.getElementById('coverPreviewWrap').classList.add('show'); }
+  document.getElementById('aiPreview').classList.add('show');
+  document.getElementById('saveBtn').style.display = 'block';
+  renderAdminList(); openOverlay('adminOverlay');
+}
+
+function resetAdminForm() {
+  editingId = null; currentFile = null; pendingCoverSvg = ''; pendingDomain = '';
+  ['addTitle','addAuthor','addYear'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('addLang').value = 'English';
+  document.getElementById('addFile').value = '';
+  document.getElementById('fileLabel').textContent = 'Choose PDF…';
+  document.getElementById('processingBox').classList.remove('show');
+  document.getElementById('aiPreview').classList.remove('show');
+  document.getElementById('coverPreviewWrap').classList.remove('show');
+  document.getElementById('saveBtn').style.display = 'none';
+  document.getElementById('adminPanelTitle').textContent = 'Add to the Archive';
+  [1,2,3,4,5].forEach(n => setStep(n, ''));
+}
+
+function renderAdminList() {
+  const list = document.getElementById('adminEntries');
+  if (!allEntries.length) { list.innerHTML = ''; return; }
+  list.innerHTML = `<div class="entries-table-title">All Archive Entries (${allEntries.length})</div>` +
+    allEntries.map(e => `<div class="entry-row">
+      <span class="entry-row-title">${e.title}</span>
+      <span class="entry-row-cat">${CATS.find(c=>c.id===e.category)?.n||''}</span>
+      <div class="entry-row-btns">
+        <button class="row-btn" onclick="editEntry('${e.id}')">Edit</button>
+        <button class="row-btn del" onclick="confirmDelete('${e.id}')">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── TOAST ────────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── FALLBACK COVER ────────────────────────────────────────────────────────────
+function defaultCover(title, cat) {
+  const short = (title||'').length > 18 ? title.slice(0,16)+'…' : (title||'');
+  return `<svg viewBox="0 0 200 267" xmlns="http://www.w3.org/2000/svg">
+    <rect width="200" height="267" fill="#0f0d0b"/>
+    <rect x="8" y="8" width="184" height="251" fill="none" stroke="#c9a84c" stroke-width="0.4" opacity="0.3"/>
+    <text x="100" y="55" text-anchor="middle" font-family="serif" font-size="26" fill="#c9a84c" opacity="0.18">${cat?.n||''}</text>
+    <line x1="30" y1="133" x2="170" y2="133" stroke="#c9a84c" stroke-width="0.4" opacity="0.22"/>
+    <text x="100" y="125" text-anchor="middle" font-family="serif" font-size="10" fill="#c9a84c" opacity="0.5" letter-spacing="1">${short}</text>
+    <circle cx="100" cy="185" r="20" fill="none" stroke="#c9a84c" stroke-width="0.4" opacity="0.18"/>
+    <text x="100" y="191" text-anchor="middle" font-family="serif" font-size="14" fill="#c9a84c" opacity="0.15">✦</text>
+  </svg>`;
+}
+
+document.addEventListener('keydown', e => { if (e.key==='Escape') document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show')); });
+boot();
+</script>
+</body>
+</html>
