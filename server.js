@@ -78,15 +78,42 @@ app.get('/api/stats', (req, res) => res.json(db.stats()));
 app.get('/api/tags', (req, res) => {
   const entries = db.getAll();
   const grouped = {};
-  CATEGORIES.forEach(cat => { grouped[cat.id] = new Set(); });
+  CATEGORIES.forEach(cat => { grouped[cat.id] = {}; });
   entries.forEach(e => {
     if (grouped[e.category]) {
-      (e.tags || []).forEach(t => grouped[e.category].add(t));
+      (e.tags || []).forEach(t => {
+        grouped[e.category][t] = (grouped[e.category][t] || 0) + 1;
+      });
     }
   });
+  // Sort by frequency descending, ties alphabetically
   const result = {};
-  Object.keys(grouped).forEach(k => { result[k] = [...grouped[k]].sort(); });
+  Object.keys(grouped).forEach(catId => {
+    const counts = grouped[catId];
+    result[catId] = Object.keys(counts).sort((a, b) =>
+      counts[b] !== counts[a] ? counts[b] - counts[a] : a.localeCompare(b)
+    );
+  });
   res.json(result);
+});
+
+// Recommendations — up to 6 entries similar to the given one
+app.get('/api/recommendations/:id', (req, res) => {
+  const entry = db.getById(req.params.id);
+  if (!entry || entry.hidden) return res.status(404).json({ error: 'Not found' });
+  const entryTags = new Set(entry.tags || []);
+  const all = db.getAll().filter(e => e.id !== entry.id);
+  const scored = all.map(e => {
+    const shared  = (e.tags || []).filter(t => entryTags.has(t)).length;
+    const sameCat = e.category === entry.category ? 2 : 0;
+    return { e, score: shared * 3 + sameCat };
+  });
+  const recs = scored
+    .filter(s => s.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 6)
+    .map(s => s.e);
+  res.json(recs);
 });
 
 // ── ADMIN — ENTRIES ───────────────────────────────────────────────────────────
