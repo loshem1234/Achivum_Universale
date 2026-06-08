@@ -7,10 +7,10 @@ const bcrypt   = require('bcryptjs');
 const path     = require('path');
 const { v4: uuidv4 } = require('uuid');
 
-const db              = require('./database');
-const { uploadPDF, deletePDF } = require('./r2');
+const db                           = require('./database');
+const { uploadPDF, deletePDF }     = require('./r2');
 const { processBook, CATEGORIES, generateFallbackCover } = require('./ai');
-const { runSeeds }    = require('./seed');
+const { runSeeds }                 = require('./seed');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -19,10 +19,13 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Multer — memory storage, push to R2 after processing
+// In-memory job store — tracks background AI processing jobs
+// { [jobId]: { status, step, total, message, result, error } }
+const jobs = {};
+
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 200 * 1024 * 1024 }, // 200 MB
+  limits: { fileSize: 200 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'application/pdf') cb(null, true);
     else cb(new Error('Only PDF files are accepted.'));
@@ -72,7 +75,6 @@ app.get('/api/entries/:id', (req, res) => {
 
 app.get('/api/stats', (req, res) => res.json(db.stats()));
 
-// Returns all unique tags grouped by category — used for subcategory nav bars
 app.get('/api/tags', (req, res) => {
   const entries = db.getAll();
   const grouped = {};
@@ -87,7 +89,7 @@ app.get('/api/tags', (req, res) => {
   res.json(result);
 });
 
-// ── ADMIN ROUTES ──────────────────────────────────────────────────────────────
+// ── ADMIN — ENTRIES ───────────────────────────────────────────────────────────
 app.post('/api/entries', requireAdmin, upload.single('pdf'), async (req, res) => {
   try {
     const body = JSON.parse(req.body.data || '{}');
@@ -165,48 +167,78 @@ app.delete('/api/entries/:id', requireAdmin, async (req, res) => {
   }
 });
 
-// ── AI PROCESSING with Server-Sent Events progress stream ─────────────────────
-// We use SSE so the browser gets live step-by-step updates during the long process
-app.post('/api/process', requireAdmin, upload.single('pdf'), async (req, res) => {
+// ── ADMIN — AI PROCESSING (background job + polling) ──────────────────────────
+//
+// Flow:
+//   POST /api/process  → starts background job, returns { jobId } immediately
+//   GET  /api/process/:jobId → poll for status/progress/result
+//
+// This avoids all streaming/timeout issues on Railway.
+
+app.post('/api/process', requireAdmin, upload.single('pdf'), (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No PDF file provided.' });
     const { title, author, year, language } = req.body;
     if (!title) return res.status(400).json({ error: 'Title is required.' });
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured.' });
+    if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured on server.' });
 
-    // Use SSE for real-time progress
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.flushHeaders();
+    // Create job record
+    const jobId = uuidv4();
+    jobs[jobId] = { status: 'running', step: 0, total: 5, message: 'Starting…', result: null, error: null };
 
-    const send = (type, data) => {
-      res.write(`data: ${JSON.stringify({ type, ...data })}\n\n`);
-    };
-
+    // Start processing in background — do NOT await
     const pdfBase64 = req.file.buffer.toString('base64');
+    runProcessingJob(jobId, { pdfBase64, title, author, year, language, apiKey });
 
-    const result = await processBook({
-      pdfBase64, title, author, year, language, apiKey,
-      onProgress: (step, total, message) => {
-        send('progress', { step, total, message });
-      },
-    });
+    // Return job ID immediately so browser can start polling
+    res.json({ jobId });
 
-    send('complete', { result });
-    res.end();
+    // Clean up job record after 30 minutes
+    setTimeout(() => { delete jobs[jobId]; }, 30 * 60 * 1000);
+
   } catch (err) {
     console.error('[POST /api/process]', err);
-    try {
-      res.write(`data: ${JSON.stringify({ type: 'error', message: err.message })}\n\n`);
-      res.end();
-    } catch {}
+    res.status(500).json({ error: err.message });
   }
 });
 
-// SPA fallback
+// Poll for job status
+app.get('/api/process/:jobId', requireAdmin, (req, res) => {
+  const job = jobs[req.params.jobId];
+  if (!job) return res.status(404).json({ error: 'Job not found or expired.' });
+  res.json(job);
+});
+
+async function runProcessingJob(jobId, params) {
+  try {
+    const result = await processBook({
+      ...params,
+      onProgress: (step, total, message) => {
+        if (jobs[jobId]) {
+          jobs[jobId].step    = step;
+          jobs[jobId].total   = total;
+          jobs[jobId].message = message;
+        }
+      },
+    });
+    if (jobs[jobId]) {
+      jobs[jobId].status = 'complete';
+      jobs[jobId].result = result;
+      jobs[jobId].step   = 5;
+      jobs[jobId].message = 'Complete';
+    }
+  } catch (err) {
+    console.error('[AI job]', err);
+    if (jobs[jobId]) {
+      jobs[jobId].status = 'error';
+      jobs[jobId].error  = err.message;
+    }
+  }
+}
+
+// ── SPA FALLBACK ──────────────────────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -214,4 +246,5 @@ app.get('*', (req, res) => {
 runSeeds();
 app.listen(PORT, () => {
   console.log(`Archivum Universale running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
