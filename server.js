@@ -8,7 +8,7 @@ const path     = require('path');
 const { v4: uuidv4 } = require('uuid');
 
 const db                           = require('./database');
-const { uploadPDF, deletePDF }     = require('./r2');
+const { uploadPDF, deletePDF, getPresignedUploadUrl } = require('./r2');
 const { processBook, CATEGORIES, generateFallbackCover } = require('./ai');
 const { runSeeds }                 = require('./seed');
 
@@ -194,35 +194,51 @@ app.delete('/api/entries/:id', requireAdmin, async (req, res) => {
   }
 });
 
-// ── ADMIN — AI PROCESSING (background job + polling) ──────────────────────────
+// ── ADMIN — AI PROCESSING ────────────────────────────────────────────────────
 //
-// Flow:
-//   POST /api/process  → starts background job, returns { jobId } immediately
-//   GET  /api/process/:jobId → poll for status/progress/result
-//
-// This avoids all streaming/timeout issues on Railway.
+// Two-step flow to avoid Railway proxy size limits:
+//   1. GET  /api/process/presign?filename=x.pdf
+//         → returns { uploadUrl, key, publicUrl }
+//         → browser uploads PDF directly to R2 (bypasses Railway)
+//   2. POST /api/process  { r2Key, title, author, year, language }
+//         → server fetches PDF from R2, starts background job
+//         → returns { jobId }
+//   3. GET  /api/process/:jobId → poll for status/result
 
-app.post('/api/process', requireAdmin, upload.single('pdf'), (req, res) => {
+// Step 1 — get a presigned R2 upload URL
+app.get('/api/process/presign', requireAdmin, async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ error: 'No PDF file provided.' });
-    const { title, author, year, language } = req.body;
-    if (!title) return res.status(400).json({ error: 'Title is required.' });
+    const filename = req.query.filename || 'upload.pdf';
+    const result   = await getPresignedUploadUrl(filename);
+    res.json(result);
+  } catch (err) {
+    console.error('[GET /api/process/presign]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Step 2 — start AI processing job using the R2 key
+app.post('/api/process', requireAdmin, async (req, res) => {
+  try {
+    const { r2Key, r2Url, title, author, year, language } = req.body;
+    if (!r2Key)  return res.status(400).json({ error: 'r2Key is required.' });
+    if (!title)  return res.status(400).json({ error: 'Title is required.' });
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured on server.' });
+    if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured.' });
 
-    // Create job record
+    // Fetch the PDF from R2 and convert to base64
+    const pdfResp = await fetch(r2Url);
+    if (!pdfResp.ok) throw new Error(`Could not fetch PDF from storage (${pdfResp.status})`);
+    const pdfBuffer = await pdfResp.arrayBuffer();
+    const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
+
     const jobId = uuidv4();
     jobs[jobId] = { status: 'running', step: 0, total: 5, message: 'Starting…', result: null, error: null };
 
-    // Start processing in background — do NOT await
-    const pdfBase64 = req.file.buffer.toString('base64');
-    runProcessingJob(jobId, { pdfBase64, title, author, year, language, apiKey });
+    runProcessingJob(jobId, { pdfBase64, title, author, year, language, apiKey, r2Key });
 
-    // Return job ID immediately so browser can start polling
     res.json({ jobId });
-
-    // Clean up job record after 30 minutes
     setTimeout(() => { delete jobs[jobId]; }, 30 * 60 * 1000);
 
   } catch (err) {
