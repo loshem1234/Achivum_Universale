@@ -41,6 +41,16 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS seed_hidden (
     seed_id TEXT PRIMARY KEY
   );
+
+  CREATE TABLE IF NOT EXISTS sanctum_users (
+    id          TEXT PRIMARY KEY,
+    username    TEXT NOT NULL UNIQUE,
+    email       TEXT NOT NULL UNIQUE,
+    password    TEXT NOT NULL,
+    status      TEXT DEFAULT 'active',
+    created_at  TEXT DEFAULT (datetime('now')),
+    last_login  TEXT
+  );
 `);
 
 // ── QUERIES ─────────────────────────────────────────────────────────────────
@@ -112,6 +122,16 @@ const queries = {
   `),
 };
 
+const sanctumQueries = {
+  findByUsername: db.prepare(`SELECT * FROM sanctum_users WHERE username = ? AND status = 'active'`),
+  findByEmail:    db.prepare(`SELECT * FROM sanctum_users WHERE email = ? AND status = 'active'`),
+  findById:       db.prepare(`SELECT * FROM sanctum_users WHERE id = ?`),
+  insert:         db.prepare(`INSERT INTO sanctum_users (id,username,email,password) VALUES (@id,@username,@email,@password)`),
+  updateLogin:    db.prepare(`UPDATE sanctum_users SET last_login=datetime('now') WHERE id=?`),
+  listAll:        db.prepare(`SELECT id,username,email,status,created_at,last_login FROM sanctum_users ORDER BY created_at DESC`),
+  setStatus:      db.prepare(`UPDATE sanctum_users SET status=? WHERE id=?`),
+};
+
 // ── PUBLIC API ───────────────────────────────────────────────────────────────
 module.exports = {
   getAll() {
@@ -150,6 +170,17 @@ module.exports = {
 
   stats() {
     return queries.stats.get();
+  },
+
+  // Sanctum user methods
+  sanctum: {
+    findByUsername(username) { return sanctumQueries.findByUsername.get(username); },
+    findByEmail(email)       { return sanctumQueries.findByEmail.get(email); },
+    findById(id)             { return sanctumQueries.findById.get(id); },
+    insert(user)             { return sanctumQueries.insert.run(user); },
+    updateLogin(id)          { return sanctumQueries.updateLogin.run(id); },
+    listAll()                { return sanctumQueries.listAll.all(); },
+    setStatus(id, status)    { return sanctumQueries.setStatus.run(status, id); },
   },
 };
 
