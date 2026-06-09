@@ -1,4 +1,4 @@
-const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
@@ -38,6 +38,24 @@ async function uploadPDF(buffer, originalName) {
 }
 
 /**
+ * Generate a presigned URL so the browser can upload directly to R2.
+ * This bypasses Railway's proxy size limits entirely.
+ * Returns { uploadUrl, key, publicUrl }
+ */
+async function getPresignedUploadUrl(filename, expiresInSeconds = 300) {
+  const ext  = require('path').extname(filename) || '.pdf';
+  const key  = `pdfs/${require('uuid').v4()}${ext}`;
+  const cmd  = new PutObjectCommand({
+    Bucket:      BUCKET,
+    Key:         key,
+    ContentType: 'application/pdf',
+  });
+  const uploadUrl  = await getSignedUrl(r2, cmd, { expiresIn: expiresInSeconds });
+  const publicUrl  = `${PUBLIC_URL}/${key}`;
+  return { uploadUrl, key, publicUrl };
+}
+
+/**
  * Delete a PDF from R2 by its key.
  */
 async function deletePDF(key) {
@@ -54,4 +72,4 @@ async function getSignedPDFUrl(key, expiresInSeconds = 3600) {
   return getSignedUrl(r2, cmd, { expiresIn: expiresInSeconds });
 }
 
-module.exports = { uploadPDF, deletePDF, getSignedPDFUrl };
+module.exports = { uploadPDF, deletePDF, getSignedPDFUrl, getPresignedUploadUrl };
