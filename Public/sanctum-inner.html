@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanctum Sanctorum</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --void:#030205;--deep:#06040a;--surface:#0d0b14;--surface2:#14111e;--surface3:#1c1828;
+  --gold:#c9a84c;--gold-light:#e8c96a;--gold-pale:#f5e4a8;--gold-dim:#7a5f28;
+  --gold-glow:rgba(201,168,76,0.08);--gold-glow2:rgba(201,168,76,0.15);--gold-glow3:rgba(201,168,76,0.26);
+  --crimson:#6a1010;--crimson2:#3a0808;
+  --text:#ddd4b8;--text-muted:#9a8a68;--text-dim:#4a3e28;
+  --border:rgba(201,168,76,0.1);--border-med:rgba(201,168,76,0.2);--border-hi:rgba(201,168,76,0.38);
+  --serif:'Cormorant Garamond',Georgia,serif;--title:'Cinzel',serif;
+  --display:'Cinzel Decorative',serif;--body:'EB Garamond',Georgia,serif;
+}
+html,body{height:100%;background:var(--void);color:var(--text);font-family:var(--serif);font-size:17px;line-height:1.7;overflow-x:hidden}
+body{background-image:radial-gradient(ellipse at 50% 0%,rgba(106,16,16,0.14) 0%,transparent 55%),radial-gradient(ellipse at 50% 100%,rgba(42,20,80,0.18) 0%,transparent 50%)}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--void)}::-webkit-scrollbar-thumb{background:var(--gold-dim)}
+
+.particle{position:fixed;border-radius:50%;pointer-events:none;animation:drift linear infinite;z-index:0}
+@keyframes drift{0%{transform:translateY(100vh) rotate(0deg);opacity:0}10%{opacity:1}90%{opacity:.3}100%{transform:translateY(-20vh) rotate(720deg);opacity:0}}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;width:100%;z-index:100;padding:1.1rem 3rem;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(3,2,5,0.96) 0%,transparent);border-bottom:1px solid rgba(201,168,76,0.06)}
+.nav-title{font-family:var(--display);font-size:.72rem;letter-spacing:.15em;color:var(--gold-dim);text-transform:uppercase;opacity:.55;cursor:pointer}
+.nav-right{display:flex;align-items:center;gap:1.5rem}
+.nav-user{font-family:var(--serif);font-size:.82rem;color:var(--text-dim);font-style:italic}
+.nav-exit{font-family:var(--title);font-size:.6rem;letter-spacing:.18em;color:var(--text-dim);text-transform:uppercase;cursor:pointer;background:none;border:1px solid rgba(201,168,76,0.1);padding:.3rem .8rem;transition:all .2s}
+.nav-exit:hover{color:var(--gold-dim);border-color:rgba(201,168,76,0.22)}
+
+/* ── VIEWS ── */
+.view{display:none}.view.active{display:block}
+
+/* ══════════════════════════════════════════
+   HOME VIEW
+══════════════════════════════════════════ */
+
+/* MA'AT — always awake in the inner chamber */
+.maat-stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;overflow:hidden;z-index:0}
+.maat-fig{width:min(480px,86vw);opacity:.18}
+@keyframes eyePulse{0%,100%{opacity:.28}50%{opacity:.62}}
+.eye-glow-i{animation:eyePulse 3.8s ease infinite}
+
+.inner-hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;text-align:center;padding:8rem 3rem 4rem;overflow:hidden}
+.inner-pretitle{font-family:var(--title);font-size:.62rem;letter-spacing:.55em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:1.4rem;opacity:.6;position:relative;z-index:2}
+.inner-title{font-family:var(--display);font-size:clamp(2rem,5vw,4rem);font-weight:700;letter-spacing:.08em;color:var(--gold-light);line-height:1.05;text-transform:uppercase;margin-bottom:.6rem;text-shadow:0 0 60px rgba(201,168,76,0.2),0 0 120px rgba(106,16,16,0.25);position:relative;z-index:2}
+.inner-subtitle{font-family:var(--title);font-size:.65rem;letter-spacing:.4em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:2rem;opacity:.55;position:relative;z-index:2}
+.inner-divider{font-family:var(--serif);font-size:1.2rem;color:var(--gold-dim);opacity:.35;letter-spacing:.5em;margin-bottom:1rem;position:relative;z-index:2}
+
+/* VEIL + PORTALS */
+.veil-section{padding:5rem 3rem;max-width:1000px;margin:0 auto;position:relative;z-index:2;text-align:center}
+.veil-rule{display:flex;align-items:center;gap:2rem;margin-bottom:3.5rem}
+.veil-rule::before,.veil-rule::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.18))}
+.veil-glyph-text{font-family:var(--serif);font-size:1.1rem;color:var(--gold-dim);opacity:.45;letter-spacing:.3em}
+
+.veil-body{padding:3rem 3rem 3.5rem;border:1px solid var(--border);position:relative;margin-bottom:4rem}
+.veil-body::before,.veil-body::after{content:'𓂀';position:absolute;font-size:1.1rem;color:var(--gold-dim);opacity:.22}
+.veil-body::before{top:1rem;left:1.5rem}.veil-body::after{bottom:1rem;right:1.5rem}
+.veil-heading{font-family:var(--display);font-size:1.1rem;letter-spacing:.1em;color:var(--gold-light);text-transform:uppercase;margin-bottom:1.4rem;opacity:.8}
+.veil-text{font-family:var(--body);font-size:1.05rem;color:var(--text-muted);font-style:italic;line-height:1.95;max-width:640px;margin:0 auto 1.5rem}
+.veil-closing{font-family:var(--title);font-size:.6rem;letter-spacing:.3em;color:var(--text-dim);text-transform:uppercase;opacity:.55}
+
+/* THREE PORTAL CARDS */
+.portals{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(201,168,76,0.06);margin-bottom:4rem}
+.portal-card{background:var(--surface);padding:3rem 2rem;text-align:center;cursor:pointer;transition:background .25s,transform .25s;position:relative;overflow:hidden}
+.portal-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);opacity:.35}
+.portal-card:hover{background:var(--surface2);transform:translateY(-2px)}
+.portal-card:hover .portal-glyph{opacity:.65;text-shadow:0 0 20px rgba(201,168,76,0.3)}
+.portal-card:hover .portal-enter{opacity:1}
+.portal-glyph{font-family:var(--serif);font-size:2.8rem;color:var(--gold-dim);opacity:.4;display:block;margin-bottom:1.2rem;transition:all .3s;letter-spacing:.1em}
+.portal-name{font-family:var(--display);font-size:.82rem;letter-spacing:.1em;color:var(--gold-light);text-transform:uppercase;margin-bottom:.8rem;opacity:.85}
+.portal-desc{font-family:var(--body);font-size:.92rem;color:var(--text-dim);font-style:italic;line-height:1.75;margin-bottom:1.2rem}
+.portal-enter{font-family:var(--title);font-size:.58rem;letter-spacing:.22em;color:var(--gold-dim);text-transform:uppercase;opacity:0;transition:opacity .25s}
+
+/* THREE PILLARS */
+.pillars{display:flex;justify-content:center;gap:4rem;padding:2rem 3rem;max-width:860px;margin:0 auto}
+.pillar{text-align:center;flex:1;max-width:220px}
+.pillar-g{font-size:1.8rem;color:var(--gold-dim);opacity:.35;display:block;margin-bottom:.8rem;letter-spacing:.2em}
+.pillar-t{font-family:var(--title);font-size:.62rem;letter-spacing:.22em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:.5rem;opacity:.65}
+.pillar-p{font-family:var(--body);font-size:.88rem;color:var(--text-dim);font-style:italic;line-height:1.7;opacity:.7}
+
+.bottom-rule{text-align:center;padding:3rem;border-top:1px solid var(--border);position:relative}
+.bottom-rule::before{content:'';position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:150px;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent)}
+.hieroglyphs{font-family:var(--serif);font-size:1rem;color:var(--gold-dim);opacity:.18;letter-spacing:.5em}
+
+/* ══════════════════════════════════════════
+   SECTION VIEWS (Mystery Schools / Fragments / Notes)
+══════════════════════════════════════════ */
+.section-header{padding:6rem 3rem 3rem;text-align:center;position:relative;border-bottom:1px solid var(--border)}
+.section-header::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);width:200px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.sec-back{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--serif);font-size:.82rem;letter-spacing:.1em;color:var(--text-dim);text-transform:uppercase;cursor:pointer;transition:color .2s;margin-bottom:2rem;position:relative;z-index:2}
+.sec-back:hover{color:var(--gold)}
+.sec-glyph{font-size:2rem;color:var(--gold-dim);opacity:.35;margin-bottom:.8rem;display:block;letter-spacing:.2em}
+.sec-title{font-family:var(--display);font-size:clamp(1.5rem,3.5vw,2.8rem);letter-spacing:.1em;color:var(--gold-light);text-transform:uppercase;margin-bottom:.5rem;text-shadow:0 0 30px rgba(201,168,76,0.18)}
+.sec-desc{font-family:var(--body);font-size:1rem;color:var(--text-muted);font-style:italic;max-width:600px;margin:.5rem auto 0;line-height:1.85}
+
+/* CATEGORY NAV */
+.cat-nav{background:var(--surface);border-bottom:1px solid var(--border);padding:.65rem 3rem;display:flex;align-items:center;gap:.5rem;overflow-x:auto;scrollbar-width:none;position:sticky;top:62px;z-index:50}
+.cat-nav::-webkit-scrollbar{display:none}
+.cat-nav-label{font-family:var(--title);font-size:.6rem;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;white-space:nowrap;margin-right:.4rem;flex-shrink:0}
+.ctab{background:transparent;border:1px solid var(--border);color:var(--text-dim);font-family:var(--serif);font-size:.82rem;padding:.3rem .9rem;white-space:nowrap;transition:all .2s;border-radius:1px;cursor:pointer}
+.ctab:hover{border-color:var(--border-med);color:var(--text-muted)}
+.ctab.active{background:var(--gold-glow2);border-color:var(--gold);color:var(--gold-light)}
+
+/* CONTENT AREA */
+.sec-content{padding:2.5rem 3rem;max-width:1200px;margin:0 auto}
+
+/* ARTICLE CARDS */
+.article-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:2px;background:rgba(201,168,76,0.06)}
+.article-card{background:var(--surface);padding:2rem;cursor:pointer;transition:background .2s;position:relative}
+.article-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.15),transparent)}
+.article-card:hover{background:var(--surface2)}
+.article-cat-tag{font-family:var(--title);font-size:.58rem;letter-spacing:.15em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:.7rem;display:block}
+.article-title{font-family:var(--display);font-size:1rem;letter-spacing:.05em;color:var(--gold-light);line-height:1.3;margin-bottom:.6rem;opacity:.9}
+.article-source{font-family:var(--serif);font-size:.8rem;color:var(--text-muted);font-style:italic;margin-bottom:.5rem}
+.article-excerpt{font-family:var(--body);font-size:.9rem;color:var(--text-dim);line-height:1.7;font-style:italic}
+.article-date{font-family:var(--serif);font-size:.72rem;color:var(--text-dim);margin-top:.8rem;opacity:.6}
+
+/* ARTICLE DETAIL */
+.article-detail{max-width:780px;margin:0 auto;padding:3rem}
+.ad-cat{font-family:var(--title);font-size:.62rem;letter-spacing:.2em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:.8rem;display:block}
+.ad-title{font-family:var(--display);font-size:clamp(1.4rem,3vw,2.2rem);letter-spacing:.06em;color:var(--gold-light);line-height:1.2;margin-bottom:.5rem}
+.ad-source{font-family:var(--body);font-size:1rem;font-style:italic;color:var(--text-muted);margin-bottom:.3rem}
+.ad-date{font-family:var(--serif);font-size:.78rem;color:var(--text-dim);margin-bottom:2rem}
+.ad-rule{height:1px;background:var(--border);margin:1.5rem 0;position:relative}
+.ad-rule::after{content:'𓋹';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--deep);padding:0 .8rem;font-size:.65rem;color:var(--gold-dim);opacity:.45}
+.ad-body{font-family:var(--body);font-size:1.08rem;color:var(--text-muted);line-height:1.95;white-space:pre-wrap}
+.ad-pdf-frame{margin-top:1.5rem;width:100%;height:600px;border:1px solid var(--border);background:#fff}
+.ad-no-pdf{padding:2.5rem;text-align:center;background:var(--surface2);border:1px solid var(--border);margin-top:1.5rem;font-family:var(--body);font-style:italic;color:var(--text-dim);font-size:.92rem}
+.empty-sec{text-align:center;padding:5rem 2rem;font-family:var(--body);font-style:italic;color:var(--text-dim);font-size:1rem}
+
+/* ADMIN PANEL */
+.admin-panel-btn{position:fixed;bottom:2.5rem;right:2.5rem;background:var(--surface2);border:1px solid var(--gold-dim);color:var(--gold);font-family:var(--title);font-size:.62rem;letter-spacing:.18em;padding:.75rem 1.4rem;text-transform:uppercase;z-index:50;transition:all .22s;border-radius:1px;display:none;box-shadow:0 4px 28px rgba(0,0,0,.5);cursor:pointer}
+.admin-panel-btn:hover{background:var(--gold-glow2);border-color:var(--gold)}
+
+/* OVERLAY */
+.overlay{display:none;position:fixed;inset:0;background:rgba(2,1,4,.93);z-index:200;align-items:flex-start;justify-content:center;overflow-y:auto;padding:2rem;backdrop-filter:blur(4px)}
+.overlay.show{display:flex}
+.panel{background:var(--surface);border:1px solid var(--border-hi);padding:2.5rem;width:580px;max-width:95vw;position:relative;margin:auto;box-shadow:0 20px 80px rgba(0,0,0,.7)}
+.panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);opacity:.5}
+.panel-title{font-family:var(--title);font-size:.8rem;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;margin-bottom:1.8rem;padding-bottom:.8rem;border-bottom:1px solid var(--border);text-align:center}
+.close-btn{position:absolute;top:.9rem;right:1.2rem;background:none;border:none;color:var(--text-dim);font-size:1rem;cursor:pointer;transition:color .2s;padding:.2rem .4rem}
+.close-btn:hover{color:var(--gold)}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-family:var(--title);font-size:.6rem;letter-spacing:.18em;color:var(--text-muted);text-transform:uppercase;margin-bottom:.35rem}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--void);border:1px solid var(--border-med);color:var(--text);font-family:var(--body);font-size:.98rem;padding:.55rem .8rem;outline:none;transition:border-color .2s;border-radius:1px}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--gold)}
+.form-group select option{background:var(--void);color:var(--text)}
+.form-group textarea{resize:vertical;min-height:140px;line-height:1.65}
+.btn-pub{width:100%;background:var(--gold-glow2);border:1px solid var(--gold);color:var(--gold-light);font-family:var(--title);font-size:.7rem;letter-spacing:.2em;padding:.8rem;text-transform:uppercase;cursor:pointer;transition:all .22s;margin-top:.5rem}
+.btn-pub:hover{background:var(--gold-glow3)}
+
+/* TOAST */
+.toast{position:fixed;bottom:2.5rem;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border-med);color:var(--text-muted);font-family:var(--serif);font-size:.88rem;padding:.65rem 1.6rem;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+footer{text-align:center;padding:2rem;font-family:var(--title);font-size:.56rem;letter-spacing:.22em;color:var(--text-dim);text-transform:uppercase;opacity:.35}
+</style>
+</head>
+<body>
+<div id="particles"></div>
+
+<nav>
+  <div class="nav-title" id="navHomeBtn">Sanctum Sanctorum</div>
+  <div class="nav-right">
+    <span class="nav-user" id="navUser"></span>
+    <button class="nav-exit" id="exitBtn">Depart</button>
+  </div>
+</nav>
+
+<!-- ══ HOME VIEW ══ -->
+<div class="view active" id="view-home">
+  <div class="inner-hero">
+    <div class="maat-stage">
+      <svg class="maat-fig" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+        <defs><radialGradient id="eg" cx="50%" cy="50%"><stop offset="0%" stop-color="#e8c96a" stop-opacity="1"/><stop offset="70%" stop-color="#c9a84c" stop-opacity=".6"/><stop offset="100%" stop-color="#c9a84c" stop-opacity="0"/></radialGradient></defs>
+        <ellipse cx="200" cy="420" rx="90" ry="160" fill="none" stroke="#c9a84c" stroke-width=".8" opacity=".6"/>
+        <line x1="200" y1="260" x2="200" y2="580" stroke="#c9a84c" stroke-width=".4" opacity=".3"/>
+        <line x1="60" y1="340" x2="340" y2="340" stroke="#c9a84c" stroke-width=".6" opacity=".5"/>
+        <path d="M200,340 Q100,285 38,362 Q105,318 200,340" fill="none" stroke="#c9a84c" stroke-width=".5" opacity=".4"/>
+        <path d="M200,340 Q300,285 362,362 Q295,318 200,340" fill="none" stroke="#c9a84c" stroke-width=".5" opacity=".4"/>
+        <line x1="200" y1="340" x2="78" y2="372" stroke="#c9a84c" stroke-width=".3" opacity=".22"/>
+        <line x1="200" y1="340" x2="322" y2="372" stroke="#c9a84c" stroke-width=".3" opacity=".22"/>
+        <rect x="188" y="248" width="24" height="30" fill="none" stroke="#c9a84c" stroke-width=".6" opacity=".5"/>
+        <ellipse cx="200" cy="210" rx="52" ry="58" fill="none" stroke="#c9a84c" stroke-width=".7" opacity=".7"/>
+        <line x1="200" y1="152" x2="200" y2="58" stroke="#c9a84c" stroke-width="1" opacity=".7"/>
+        <path d="M200,58 Q222,79 216,112 Q206,127 200,132 Q194,127 184,112 Q178,79 200,58" fill="none" stroke="#c9a84c" stroke-width=".6" opacity=".6"/>
+        <rect x="155" y="150" width="90" height="10" rx="2" fill="none" stroke="#c9a84c" stroke-width=".6" opacity=".5"/>
+        <path d="M155,255 Q200,274 245,255" fill="none" stroke="#c9a84c" stroke-width=".5" opacity=".4"/>
+        <!-- LEFT EYE open -->
+        <path d="M161,205 Q175,196 189,205 Q175,214 161,205" fill="none" stroke="#c9a84c" stroke-width=".7" opacity=".75"/>
+        <line x1="161" y1="205" x2="148" y2="208" stroke="#c9a84c" stroke-width=".6" opacity=".5"/>
+        <ellipse cx="175" cy="205" rx="10.5" ry="5.5" fill="#06040a" stroke="#c9a84c" stroke-width=".6"/>
+        <circle cx="175" cy="205" r="3.8" fill="#c9a84c" opacity=".95"/>
+        <circle cx="175" cy="205" r="1.7" fill="#030205"/>
+        <circle cx="177" cy="203.5" r=".9" fill="#f5e4a8" opacity=".8"/>
+        <ellipse class="eye-glow-i" cx="175" cy="205" rx="16" ry="9" fill="url(#eg)" opacity=".35"/>
+        <!-- RIGHT EYE open -->
+        <path d="M211,205 Q225,196 239,205 Q225,214 211,205" fill="none" stroke="#c9a84c" stroke-width=".7" opacity=".75"/>
+        <line x1="239" y1="205" x2="252" y2="208" stroke="#c9a84c" stroke-width=".6" opacity=".5"/>
+        <ellipse cx="225" cy="205" rx="10.5" ry="5.5" fill="#06040a" stroke="#c9a84c" stroke-width=".6"/>
+        <circle cx="225" cy="205" r="3.8" fill="#c9a84c" opacity=".95"/>
+        <circle cx="225" cy="205" r="1.7" fill="#030205"/>
+        <circle cx="227" cy="203.5" r=".9" fill="#f5e4a8" opacity=".8"/>
+        <ellipse class="eye-glow-i" cx="225" cy="205" rx="16" ry="9" fill="url(#eg)" opacity=".35"/>
+        <g transform="translate(130,382)" opacity=".45"><line x1="0" y1="-30" x2="0" y2="30" stroke="#c9a84c" stroke-width=".8"/><line x1="-18" y1="-5" x2="18" y2="-5" stroke="#c9a84c" stroke-width=".8"/><ellipse cx="0" cy="-22" rx="10" ry="12" fill="none" stroke="#c9a84c" stroke-width=".8"/></g>
+        <g transform="translate(270,372)" opacity=".38"><line x1="0" y1="-20" x2="0" y2="10" stroke="#c9a84c" stroke-width=".6"/><line x1="-18" y1="-15" x2="18" y2="-15" stroke="#c9a84c" stroke-width=".6"/><circle cx="-18" cy="-10" r="8" fill="none" stroke="#c9a84c" stroke-width=".5"/><circle cx="18" cy="-10" r="8" fill="none" stroke="#c9a84c" stroke-width=".5"/><line x1="-18" y1="-15" x2="-18" y2="-10" stroke="#c9a84c" stroke-width=".4"/><line x1="18" y1="-15" x2="18" y2="-10" stroke="#c9a84c" stroke-width=".4"/></g>
+        <text x="200" y="570" text-anchor="middle" font-family="serif" font-size="8" fill="#c9a84c" opacity=".28">𓂀 𓋹 𓆃 𓄿 𓅓 𓋹 𓂀</text>
+      </svg>
+    </div>
+    <div style="position:relative;z-index:2;text-align:center">
+      <div class="inner-pretitle">You have entered</div>
+      <h1 class="inner-title">Sanctum<br>Sanctorum</h1>
+      <div class="inner-subtitle">She watches. She weighs.</div>
+      <div class="inner-divider">⸻ 𓋹 ⸻</div>
+    </div>
+  </div>
+
+  <div class="veil-section">
+    <div class="veil-rule"><div class="veil-glyph-text">𓂀 𓋹 𓂀</div></div>
+    <div class="veil-body">
+      <div class="veil-heading">The Chamber Awaits</div>
+      <p class="veil-text">You have passed the threshold and been found worthy. What this sanctum holds beyond these first three portals has not yet been revealed — not because it does not exist, but because it is not yet time for it to be shown.</p>
+      <p class="veil-text">The keeper is preparing what will be placed here. Your presence has been noted, your name written in the ledger of those who sought and found the gate.</p>
+      <div class="veil-closing">What is veiled is not absent. It waits.</div>
+    </div>
+
+    <!-- THREE PORTALS -->
+    <div class="portals">
+      <div class="portal-card" data-section="schools">
+        <span class="portal-glyph">𓂀</span>
+        <div class="portal-name">Mystery Schools</div>
+        <p class="portal-desc">Articles, expositions, and teachings on the inner traditions — Hermetic, Gnostic, Neoplatonic, and beyond.</p>
+        <div class="portal-enter">Enter ›</div>
+      </div>
+      <div class="portal-card" data-section="fragments">
+        <span class="portal-glyph">𓆃</span>
+        <div class="portal-name">Fragments</div>
+        <p class="portal-desc">Isolated chapters and passages drawn from the wider canon — scattered lights from the great texts.</p>
+        <div class="portal-enter">Enter ›</div>
+      </div>
+      <div class="portal-card" data-section="notes">
+        <span class="portal-glyph">𓋹</span>
+        <div class="portal-name">Notes</div>
+        <p class="portal-desc">Gleaned observations, marginal insights, and distilled wisdom drawn from the keeper's reading.</p>
+        <div class="portal-enter">Enter ›</div>
+      </div>
+    </div>
+
+    <div class="pillars">
+      <div class="pillar"><span class="pillar-g">𓋹</span><div class="pillar-t">Truth</div><p class="pillar-p">Ma'at holds the feather against which all hearts are weighed.</p></div>
+      <div class="pillar"><span class="pillar-g">𓂀</span><div class="pillar-t">Sight</div><p class="pillar-p">The eye that sees all things cannot be closed by ignorance.</p></div>
+      <div class="pillar"><span class="pillar-g">𓆃</span><div class="pillar-t">Silence</div><p class="pillar-p">The mysteries are secret because they cannot be spoken.</p></div>
+    </div>
+    <div class="bottom-rule"><div class="hieroglyphs">𓂀 𓋹 𓆃 𓄿 𓅓 𓋹 𓂀</div></div>
+  </div>
+  <footer>Sanctum Sanctorum &nbsp;·&nbsp; Inner Chamber &nbsp;·&nbsp; Archivum Universale</footer>
+</div>
+
+<!-- ══ SECTION VIEW ══ -->
+<div class="view" id="view-section">
+  <div class="section-header" id="secHeader"></div>
+  <div class="cat-nav" id="catNav" style="display:none"></div>
+  <div class="sec-content" id="secContent"></div>
+  <footer>Sanctum Sanctorum &nbsp;·&nbsp; Archivum Universale</footer>
+</div>
+
+<!-- ══ ARTICLE DETAIL VIEW ══ -->
+<div class="view" id="view-article">
+  <div id="articleContent" style="padding-top:62px"></div>
+  <footer>Sanctum Sanctorum &nbsp;·&nbsp; Archivum Universale</footer>
+</div>
+
+<button class="admin-panel-btn" id="adminBtn">+ Publish</button>
+<div class="toast" id="toast"></div>
+
+<!-- ADMIN PUBLISH PANEL -->
+<div class="overlay" id="adminOverlay">
+  <div class="panel">
+    <button class="close-btn" id="closeAdmin">✕</button>
+    <div class="panel-title" id="adminPanelTitle">Publish to the Sanctum</div>
+    <div class="form-group">
+      <label>Section</label>
+      <select id="pubSection">
+        <option value="schools">Mystery Schools</option>
+        <option value="fragments">Fragments</option>
+        <option value="notes">Notes</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Title</label><input type="text" id="pubTitle" placeholder="Title of this entry"></div>
+    <div class="form-group"><label>Category <span style="font-size:.65rem;color:var(--text-dim)">(define freely)</span></label><input type="text" id="pubCategory" placeholder="e.g. Hermetic · Gnostic · Kabbalistic…"></div>
+    <div id="fragmentFields" style="display:none">
+      <div class="form-group"><label>Source Book</label><input type="text" id="pubSourceBook" placeholder="Title of the source text"></div>
+      <div class="form-group"><label>Source Author</label><input type="text" id="pubSourceAuthor" placeholder="Author of the source text"></div>
+      <div class="form-group"><label>Domain</label>
+        <select id="pubDomain">
+          <option value="">— Select domain —</option>
+          <option value="esotericism">I — Esotericism</option><option value="philosophy">II — Philosophy</option>
+          <option value="psychology">III — Psychology</option><option value="religion">IV — Religion</option>
+          <option value="social-sciences">V — Social Sciences</option><option value="arts">VI — Arts</option>
+          <option value="natural-sciences">VII — Natural Sciences</option><option value="formal-sciences">VIII — Formal Sciences</option>
+          <option value="applied-science">IX — Applied Science</option><option value="hct">X — History · Culture · Technology</option>
+        </select>
+      </div>
+    </div>
+    <div id="noteFields" style="display:none">
+      <div class="form-group"><label>Source</label><input type="text" id="pubNoteSource" placeholder="Book or text this note is drawn from"></div>
+    </div>
+    <div class="form-group"><label>Body</label><textarea id="pubBody" placeholder="Write the full text here…"></textarea></div>
+    <div class="form-group">
+      <label>PDF Attachment <span style="font-size:.65rem;color:var(--text-dim)">(optional)</span></label>
+      <label for="pubFile" id="pubFileLabel" style="display:flex;align-items:center;background:var(--void);border:1px solid var(--border-med);color:var(--text-muted);font-family:var(--body);font-size:.95rem;padding:.55rem .8rem;cursor:pointer;border-radius:1px;font-style:italic">Attach PDF…</label>
+      <input type="file" id="pubFile" accept=".pdf" style="display:none">
+    </div>
+    <button class="btn-pub" id="publishBtn">Publish to the Sanctum</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const DOMAINS = {
+  esotericism:'I — Esotericism',philosophy:'II — Philosophy',psychology:'III — Psychology',
+  religion:'IV — Religion','social-sciences':'V — Social Sciences',arts:'VI — Arts',
+  'natural-sciences':'VII — Natural Sciences','formal-sciences':'VIII — Formal Sciences',
+  'applied-science':'IX — Applied Science',hct:'X — History · Culture · Technology'
+};
+
+const SECTION_META = {
+  schools:   { glyph:'𓂀', name:'Mystery Schools', desc:'Articles and expositions on the inner traditions — Hermetic, Gnostic, Neoplatonic, Thelemic, Kabbalistic, and beyond.' },
+  fragments: { glyph:'𓆃', name:'Fragments',       desc:'Isolated chapters and passages drawn from the wider canon — scattered lights from the great texts, classified by domain.' },
+  notes:     { glyph:'𓋹', name:'Notes',            desc:'Gleaned observations and distilled wisdom drawn from the keeper\'s reading across the tradition.' },
+};
+
+let sanctumToken = sessionStorage.getItem('sanctum_token') || '';
+let adminToken   = sessionStorage.getItem('au_admin_token') || '';
+let isAdmin      = false;
+let currentSection = '';
+let currentCatFilter = '';
+let editingArticleId = null;
+
+// ── AUTH GUARD ──────────────────────────────────────────────────────────────
+(async () => {
+  if (!sanctumToken) { window.location.href = '/sanctum'; return; }
+  try {
+    const r = await fetch('/api/sanctum/verify', { headers:{'x-sanctum-token':sanctumToken} });
+    if (!r.ok) { sessionStorage.removeItem('sanctum_token'); window.location.href='/sanctum'; return; }
+    const u = sessionStorage.getItem('sanctum_user');
+    if (u) document.getElementById('navUser').textContent = u;
+  } catch { window.location.href = '/sanctum'; return; }
+
+  // Check admin
+  if (adminToken) {
+    try {
+      const r = await fetch('/api/health', { headers:{'x-admin-token':adminToken} });
+      if (r.ok) { isAdmin=true; document.getElementById('adminBtn').style.display='block'; }
+    } catch {}
+  }
+})();
+
+// ── PARTICLES ──────────────────────────────────────────────────────────────
+(()=>{
+  const c=document.getElementById('particles');
+  for(let i=0;i<22;i++){
+    const p=document.createElement('div');p.className='particle';
+    const sz=Math.random()*2+.4,x=Math.random()*100,dur=Math.random()*22+14,del=Math.random()*-25;
+    const col=Math.random()>.5?'#c9a84c':(Math.random()>.5?'#7a5f28':'#6a1010');
+    p.style.cssText=`width:${sz}px;height:${sz}px;left:${x}vw;background:${col};opacity:0;animation-duration:${dur}s;animation-delay:${del}s`;
+    c.appendChild(p);
+  }
+})();
+
+// ── VIEWS ──────────────────────────────────────────────────────────────────
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goHome() { showView('home'); currentSection=''; currentCatFilter=''; }
+
+// ── LOAD SECTION ──────────────────────────────────────────────────────────
+async function loadSection(section, catFilter) {
+  currentSection = section;
+  currentCatFilter = catFilter||'';
+  const meta = SECTION_META[section];
+
+  // Build header
+  document.getElementById('secHeader').innerHTML = `
+    <div class="sec-back" id="secBack"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>Return to the Sanctum</div>
+    <span class="sec-glyph">${meta.glyph}</span>
+    <div class="sec-title">${meta.name}</div>
+    <p class="sec-desc">${meta.desc}</p>`;
+
+  // Update publish section selector
+  document.getElementById('pubSection').value = section;
+  togglePubFields(section);
+
+  // Fetch articles
+  let url = `/api/sanctum/articles/${section}`;
+  if (catFilter) url += `?category=${encodeURIComponent(catFilter)}`;
+  const articles = await fetchSanctum(url);
+
+  // Fetch categories
+  const cats = await fetchSanctum(`/api/sanctum/articles/${section}/categories`);
+  buildCatNav(section, cats, catFilter);
+
+  // Render
+  const content = document.getElementById('secContent');
+  if (!articles.length) {
+    content.innerHTML = `<div class="empty-sec">${catFilter?`No entries in "${catFilter}" yet.`:'No entries have been published here yet. The keeper has not yet spoken.'}</div>`;
+  } else {
+    const grid = document.createElement('div'); grid.className='article-grid';
+    articles.forEach(a => grid.appendChild(makeArticleCard(a, section)));
+    content.innerHTML=''; content.appendChild(grid);
+  }
+
+  showView('section');
+}
+
+function buildCatNav(section, cats, active) {
+  const nav = document.getElementById('catNav');
+  if (!cats.length) { nav.style.display='none'; return; }
+  nav.style.display='flex';
+  nav.innerHTML=`<span class="cat-nav-label">Filter</span>`;
+  const allBtn=document.createElement('button');
+  allBtn.className='ctab'+(active?'':' active');
+  allBtn.textContent='All';
+  allBtn.addEventListener('click',()=>loadSection(section,''));
+  nav.appendChild(allBtn);
+  cats.forEach(cat=>{
+    const btn=document.createElement('button');
+    btn.className='ctab'+(cat===active?' active':'');
+    btn.textContent=cat;
+    btn.addEventListener('click',()=>loadSection(section,cat));
+    nav.appendChild(btn);
+  });
+}
+
+function makeArticleCard(a, section) {
+  const card=document.createElement('div'); card.className='article-card';
+  const source = a.source_book ? `${a.source_book}${a.source_author?' · '+a.source_author:''}` : (a.source_book||'');
+  const domainLabel = a.domain && DOMAINS[a.domain] ? DOMAINS[a.domain] : '';
+  card.innerHTML=`
+    <span class="article-cat-tag">${a.category||domainLabel||''}</span>
+    <div class="article-title">${a.title}</div>
+    ${source?`<div class="article-source">${source}</div>`:''}
+    ${a.body?`<div class="article-excerpt">${a.body.slice(0,140).trim()}${a.body.length>140?'…':''}</div>`:''}
+    <div class="article-date">${formatDate(a.created_at)}</div>
+    ${isAdmin?`<div style="display:flex;gap:.5rem;margin-top:.8rem">
+      <button class="ctab" data-act="edit" data-id="${a.id}" style="font-size:.62rem">Edit</button>
+      <button class="ctab" data-act="del" data-id="${a.id}" style="font-size:.62rem;color:#904040;border-color:rgba(144,64,64,0.3)">Delete</button>
+    </div>`:''}`;
+  card.addEventListener('click',(e)=>{
+    if(e.target.dataset.act) return;
+    openArticle(a.id, section);
+  });
+  return card;
+}
+
+async function openArticle(id, section) {
+  const a = await fetchSanctum(`/api/sanctum/article/${id}`);
+  const domainLabel = a.domain && DOMAINS[a.domain] ? DOMAINS[a.domain] : '';
+  const source = a.source_book ? `${a.source_book}${a.source_author?' — '+a.source_author:''}` : '';
+  const pdfSec = a.pdf_url
+    ? `<iframe class="ad-pdf-frame" src="${a.pdf_url}"></iframe>`
+    : '';
+  document.getElementById('articleContent').innerHTML=`
+    <div class="article-detail">
+      <div class="sec-back" id="artBack"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>Back</div>
+      <span class="ad-cat">${a.category||domainLabel||''}</span>
+      <div class="ad-title">${a.title}</div>
+      ${source?`<div class="ad-source">${source}</div>`:''}
+      <div class="ad-date">${formatDate(a.created_at)}</div>
+      <div class="ad-rule"></div>
+      ${a.body?`<div class="ad-body">${escHtml(a.body)}</div>`:''}
+      ${pdfSec}
+    </div>`;
+  showView('article');
+}
+
+function formatDate(str){ try{return new Date(str).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});}catch{return str;} }
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── FETCH HELPERS ──────────────────────────────────────────────────────────
+async function fetchSanctum(url) {
+  const r = await fetch(url, { headers:{'x-sanctum-token':sanctumToken} });
+  if (!r.ok) { const e=await r.json().catch(()=>({})); throw new Error(e.error||`HTTP ${r.status}`); }
+  return r.json();
+}
+async function fetchAdmin(method, url, body, isForm) {
+  const opts={method,headers:{'x-admin-token':adminToken}};
+  if(body&&!isForm){opts.headers['Content-Type']='application/json';opts.body=JSON.stringify(body);}
+  else if(body)opts.body=body;
+  const r=await fetch(url,opts);
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error||`HTTP ${r.status}`);}
+  return r.json();
+}
+
+// ── ADMIN PUBLISH ──────────────────────────────────────────────────────────
+function togglePubFields(section) {
+  document.getElementById('fragmentFields').style.display = section==='fragments'?'block':'none';
+  document.getElementById('noteFields').style.display = section==='notes'?'block':'none';
+}
+
+document.getElementById('pubSection').addEventListener('change', function(){ togglePubFields(this.value); });
+document.getElementById('pubFile').addEventListener('change', function(){ document.getElementById('pubFileLabel').textContent = this.files[0]?this.files[0].name:'Attach PDF…'; });
+
+document.getElementById('publishBtn').addEventListener('click', async () => {
+  const section   = document.getElementById('pubSection').value;
+  const title     = document.getElementById('pubTitle').value.trim();
+  const category  = document.getElementById('pubCategory').value.trim();
+  const articleBody = document.getElementById('pubBody').value.trim();
+  const source_book   = document.getElementById('pubSourceBook')?.value?.trim()||'';
+  const source_author = document.getElementById('pubSourceAuthor')?.value?.trim()||'';
+  const domain    = document.getElementById('pubDomain')?.value||'';
+  const noteSource = document.getElementById('pubNoteSource')?.value?.trim()||'';
+  if(!title){alert('Title is required.');return;}
+
+  const meta = { section, title, category,
+    articleBody: articleBody||(noteSource?`Source: ${noteSource}`:''),
+    source_book: source_book||noteSource,
+    source_author, domain };
+  const fd=new FormData();
+  fd.append('data',JSON.stringify(meta));
+  const file=document.getElementById('pubFile').files[0];
+  if(file)fd.append('pdf',file);
+
+  try{
+    if(editingArticleId){
+      await fetchAdmin('PUT',`/api/sanctum/article/${editingArticleId}`,{
+        title,category,articleBody,source_book:source_book||noteSource,source_author,domain
+      });
+      toast('Entry updated');
+    }else{
+      await fetchAdmin('POST','/api/sanctum/articles',fd,true);
+      toast('Published to the sanctum');
+    }
+    closeAdminPanel();
+    if(currentSection===section) loadSection(section,currentCatFilter);
+  }catch(err){alert('Publish failed: '+err.message);}
+});
+
+function closeAdminPanel(){
+  document.getElementById('adminOverlay').classList.remove('show');
+  editingArticleId=null;
+  ['pubTitle','pubCategory','pubBody','pubSourceBook','pubSourceAuthor','pubNoteSource'].forEach(id=>{
+    const el=document.getElementById(id); if(el)el.value='';
+  });
+  document.getElementById('pubDomain').value='';
+  document.getElementById('pubFile').value='';
+  document.getElementById('pubFileLabel').textContent='Attach PDF…';
+  document.getElementById('adminPanelTitle').textContent='Publish to the Sanctum';
+}
+
+// ── EVENT DELEGATION ───────────────────────────────────────────────────────
+document.addEventListener('click', async function(e) {
+  const t=e.target;
+
+  if(t.closest('#navHomeBtn')) { goHome(); return; }
+  if(t.id==='exitBtn'){ sessionStorage.removeItem('sanctum_token');sessionStorage.removeItem('sanctum_user');window.location.href='/sanctum';return; }
+  if(t.id==='adminBtn'){ editingArticleId=null; document.getElementById('adminPanelTitle').textContent='Publish to the Sanctum'; if(currentSection)document.getElementById('pubSection').value=currentSection; togglePubFields(document.getElementById('pubSection').value); document.getElementById('adminOverlay').classList.add('show'); return; }
+  if(t.id==='closeAdmin'){ closeAdminPanel(); return; }
+
+  // Portal cards
+  const portal=t.closest('.portal-card');
+  if(portal){loadSection(portal.dataset.section,'');return;}
+
+  // Back buttons
+  if(t.closest('#secBack')){ goHome(); return; }
+  if(t.closest('#artBack')){ loadSection(currentSection,currentCatFilter); return; }
+
+  // Admin edit/delete on cards
+  if(t.dataset.act==='edit'){
+    e.stopPropagation();
+    const a=await fetchSanctum(`/api/sanctum/article/${t.dataset.id}`);
+    editingArticleId=a.id;
+    document.getElementById('adminPanelTitle').textContent='Edit Entry';
+    document.getElementById('pubSection').value=a.section;
+    document.getElementById('pubTitle').value=a.title||'';
+    document.getElementById('pubCategory').value=a.category||'';
+    document.getElementById('pubBody').value=a.body||'';
+    document.getElementById('pubSourceBook').value=a.source_book||'';
+    document.getElementById('pubSourceAuthor').value=a.source_author||'';
+    if(document.getElementById('pubDomain'))document.getElementById('pubDomain').value=a.domain||'';
+    if(document.getElementById('pubNoteSource'))document.getElementById('pubNoteSource').value=a.source_book||'';
+    togglePubFields(a.section);
+    document.getElementById('adminOverlay').classList.add('show');
+    return;
+  }
+  if(t.dataset.act==='del'){
+    e.stopPropagation();
+    if(!confirm('Delete this entry? This cannot be undone.'))return;
+    try{await fetchAdmin('DELETE',`/api/sanctum/article/${t.dataset.id}`);toast('Entry deleted');loadSection(currentSection,currentCatFilter);}
+    catch(err){alert('Delete failed: '+err.message);}
+    return;
+  }
+});
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('adminOverlay').classList.remove('show');});
+
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800);}
+</script>
+</body>
+</html>
