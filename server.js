@@ -346,6 +346,94 @@ app.get('/api/sanctum/members', requireAdmin, (req, res) => {
   res.json(db.sanctum.listAll());
 });
 
+
+// ── SANCTUM ARTICLE ROUTES ────────────────────────────────────────────────────
+
+// Public-to-sanctum: get articles by section (requires sanctum token)
+app.get('/api/sanctum/articles/:section', requireSanctum, (req, res) => {
+  const { section } = req.params;
+  const { category } = req.query;
+  let articles = db.articles.getBySection(section);
+  if (category) articles = articles.filter(a => a.category === category);
+  res.json(articles);
+});
+
+app.get('/api/sanctum/articles/:section/categories', requireSanctum, (req, res) => {
+  res.json(db.articles.categories(req.params.section));
+});
+
+app.get('/api/sanctum/article/:id', requireSanctum, (req, res) => {
+  const a = db.articles.getById(req.params.id);
+  if (!a) return res.status(404).json({ error: 'Not found' });
+  res.json(a);
+});
+
+// Admin: create article
+app.post('/api/sanctum/articles', requireAdmin, upload.single('pdf'), async (req, res) => {
+  try {
+    const body = JSON.parse(req.body.data || '{}');
+    const { section, title, category, articleBody, source_book, source_author, domain } = body;
+    if (!title || !section) return res.status(400).json({ error: 'Title and section are required.' });
+
+    let pdf_key=null, pdf_url=null, pdf_filename=null;
+    if (req.file) {
+      const r = await uploadPDF(req.file.buffer, req.file.originalname);
+      pdf_key=r.key; pdf_url=r.url; pdf_filename=r.filename;
+    }
+
+    const id = uuidv4();
+    db.articles.insert({
+      id, section, title,
+      category: category||null,
+      body: articleBody||'',
+      source_book: source_book||null,
+      source_author: source_author||null,
+      domain: domain||null,
+      pdf_key, pdf_url, pdf_filename,
+    });
+    res.status(201).json(db.articles.getById(id));
+  } catch(err) {
+    console.error('[POST /api/sanctum/articles]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: update article
+app.put('/api/sanctum/article/:id', requireAdmin, (req, res) => {
+  try {
+    const existing = db.articles.getById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Not found' });
+    const { title, category, articleBody, source_book, source_author, domain } = req.body;
+    db.articles.update({
+      id: req.params.id,
+      title: title||existing.title,
+      category: category||existing.category,
+      body: articleBody??existing.body,
+      source_book: source_book||existing.source_book,
+      source_author: source_author||existing.source_author,
+      domain: domain||existing.domain,
+    });
+    res.json(db.articles.getById(req.params.id));
+  } catch(err) {
+    console.error('[PUT /api/sanctum/article]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: delete article
+app.delete('/api/sanctum/article/:id', requireAdmin, async (req, res) => {
+  try {
+    const a = db.articles.getById(req.params.id);
+    if (!a) return res.status(404).json({ error: 'Not found' });
+    if (a.pdf_key) await deletePDF(a.pdf_key).catch(()=>{});
+    db.articles.delete(req.params.id);
+    res.json({ ok: true });
+  } catch(err) {
+    console.error('[DELETE /api/sanctum/article]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── SPA FALLBACK ──────────────────────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
