@@ -1,0 +1,13 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "node server.js"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[[services]]
+[services.settings]
+# Raise Railway's proxy body size limit to 150MB
+# and increase the upstream timeout for large PDF uploads
+proxyBodySize = "150mb"
