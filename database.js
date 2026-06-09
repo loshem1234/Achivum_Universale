@@ -51,6 +51,23 @@ db.exec(`
     created_at  TEXT DEFAULT (datetime('now')),
     last_login  TEXT
   );
+
+  CREATE TABLE IF NOT EXISTS sanctum_articles (
+    id          TEXT PRIMARY KEY,
+    section     TEXT NOT NULL,
+    title       TEXT NOT NULL,
+    category    TEXT,
+    body        TEXT,
+    source_book TEXT,
+    source_author TEXT,
+    domain      TEXT,
+    pdf_key     TEXT,
+    pdf_url     TEXT,
+    pdf_filename TEXT,
+    published   INTEGER DEFAULT 1,
+    created_at  TEXT DEFAULT (datetime('now')),
+    updated_at  TEXT DEFAULT (datetime('now'))
+  );
 `);
 
 // ── QUERIES ─────────────────────────────────────────────────────────────────
@@ -132,6 +149,15 @@ const sanctumQueries = {
   setStatus:      db.prepare(`UPDATE sanctum_users SET status=? WHERE id=?`),
 };
 
+const articleQueries = {
+  getBySection: db.prepare(`SELECT * FROM sanctum_articles WHERE section=? AND published=1 ORDER BY created_at DESC`),
+  getById:      db.prepare(`SELECT * FROM sanctum_articles WHERE id=?`),
+  insert:       db.prepare(`INSERT INTO sanctum_articles (id,section,title,category,body,source_book,source_author,domain,pdf_key,pdf_url,pdf_filename) VALUES (@id,@section,@title,@category,@body,@source_book,@source_author,@domain,@pdf_key,@pdf_url,@pdf_filename)`),
+  update:       db.prepare(`UPDATE sanctum_articles SET title=@title,category=@category,body=@body,source_book=@source_book,source_author=@source_author,domain=@domain,updated_at=datetime('now') WHERE id=@id`),
+  delete:       db.prepare(`DELETE FROM sanctum_articles WHERE id=?`),
+  categories:   db.prepare(`SELECT DISTINCT category FROM sanctum_articles WHERE section=? AND category IS NOT NULL AND published=1 ORDER BY category`),
+};
+
 // ── PUBLIC API ───────────────────────────────────────────────────────────────
 module.exports = {
   getAll() {
@@ -181,6 +207,15 @@ module.exports = {
     updateLogin(id)          { return sanctumQueries.updateLogin.run(id); },
     listAll()                { return sanctumQueries.listAll.all(); },
     setStatus(id, status)    { return sanctumQueries.setStatus.run(status, id); },
+  },
+
+  articles: {
+    getBySection(section)  { return articleQueries.getBySection.all(section); },
+    getById(id)            { return articleQueries.getById.get(id); },
+    insert(a)              { return articleQueries.insert.run(a); },
+    update(a)              { return articleQueries.update.run(a); },
+    delete(id)             { return articleQueries.delete.run(id); },
+    categories(section)    { return articleQueries.categories.all(section).map(r=>r.category); },
   },
 };
 
