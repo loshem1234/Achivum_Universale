@@ -1,7 +1,7 @@
 {
   "name": "archivum-universale",
   "version": "1.0.0",
-  "description": "Archivum Universale — Universal Archive of Knowledge",
+  "description": "Archivum Universale \u2014 Universal Archive of Knowledge",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -23,6 +23,6 @@
     "nodemon": "^3.1.4"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "20.x"
   }
 }
