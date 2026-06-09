@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'Public')));
 
 // In-memory job store — tracks background AI processing jobs
 // { [jobId]: { status, step, total, message, result, error } }
@@ -286,10 +286,10 @@ function requireSanctum(req, res, next) {
 
 // Sanctum pages — serve static HTML files
 app.get('/sanctum', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'sanctum.html'));
+  res.sendFile(path.join(__dirname, 'Public', 'sanctum.html'));
 });
 app.get('/sanctum/inner', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'sanctum-inner.html'));
+  res.sendFile(path.join(__dirname, 'Public', 'sanctum-inner.html'));
 });
 
 // Register
@@ -436,7 +436,7 @@ app.delete('/api/sanctum/article/:id', requireAdmin, async (req, res) => {
 
 // ── SPA FALLBACK ──────────────────────────────────────────────────────────────
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'Public', 'index.html'));
 });
 
 runSeeds();
