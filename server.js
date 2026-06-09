@@ -265,6 +265,87 @@ async function runProcessingJob(jobId, params) {
   }
 }
 
+
+// ── SANCTUM ROUTES ────────────────────────────────────────────────────────────
+
+const SANCTUM_PASSPHRASE = process.env.SANCTUM_PASSPHRASE || 'thewordislight';
+const SANCTUM_TOKENS = new Set();
+
+function issueSanctumToken() {
+  const token = uuidv4();
+  SANCTUM_TOKENS.add(token);
+  setTimeout(() => SANCTUM_TOKENS.delete(token), 24 * 60 * 60 * 1000); // 24hr
+  return token;
+}
+
+function requireSanctum(req, res, next) {
+  const token = req.headers['x-sanctum-token'];
+  if (!token || !SANCTUM_TOKENS.has(token)) return res.status(401).json({ error: 'Access denied.' });
+  next();
+}
+
+// Sanctum pages — serve static HTML files
+app.get('/sanctum', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'sanctum.html'));
+});
+app.get('/sanctum/inner', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'sanctum-inner.html'));
+});
+
+// Register
+app.post('/api/sanctum/register', async (req, res) => {
+  try {
+    const { username, email, password, passphrase } = req.body;
+    if (!username || !email || !password || !passphrase)
+      return res.status(400).json({ error: 'All fields are required.' });
+    if (passphrase !== SANCTUM_PASSPHRASE)
+      return res.status(403).json({ error: 'The passphrase is incorrect.' });
+    if (password.length < 8)
+      return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    if (db.sanctum.findByUsername(username))
+      return res.status(409).json({ error: 'That username is already taken.' });
+    if (db.sanctum.findByEmail(email))
+      return res.status(409).json({ error: 'That email is already registered.' });
+
+    const hashed = bcrypt.hashSync(password, 10);
+    const id = uuidv4();
+    db.sanctum.insert({ id, username, email, password: hashed });
+    const token = issueSanctumToken();
+    res.status(201).json({ token, username, id });
+  } catch (err) {
+    console.error('[sanctum/register]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Login
+app.post('/api/sanctum/login', (req, res) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password)
+      return res.status(400).json({ error: 'Username and password are required.' });
+    const user = db.sanctum.findByUsername(username);
+    if (!user || !bcrypt.compareSync(password, user.password))
+      return res.status(401).json({ error: 'Incorrect username or password.' });
+    db.sanctum.updateLogin(user.id);
+    const token = issueSanctumToken();
+    res.json({ token, username: user.username, id: user.id });
+  } catch (err) {
+    console.error('[sanctum/login]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Verify token — used by inner page to check auth
+app.get('/api/sanctum/verify', requireSanctum, (req, res) => {
+  res.json({ ok: true });
+});
+
+// Admin — list sanctum members
+app.get('/api/sanctum/members', requireAdmin, (req, res) => {
+  res.json(db.sanctum.listAll());
+});
+
 // ── SPA FALLBACK ──────────────────────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
