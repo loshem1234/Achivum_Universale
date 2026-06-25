@@ -65,7 +65,7 @@ nav{position:fixed;top:0;width:100%;z-index:100;padding:1.1rem 3rem;display:flex
 .veil-closing{font-family:var(--title);font-size:.6rem;letter-spacing:.3em;color:var(--text-dim);text-transform:uppercase;opacity:.55}
 
 /* THREE PORTAL CARDS */
-.portals{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(201,168,76,0.06);margin-bottom:4rem}
+.portals{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2px;background:rgba(201,168,76,0.06);margin-bottom:4rem}
 .portal-card{background:var(--surface);padding:3rem 2rem;text-align:center;cursor:pointer;transition:background .25s,transform .25s;position:relative;overflow:hidden}
 .portal-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);opacity:.35}
 .portal-card:hover{background:var(--surface2);transform:translateY(-2px)}
@@ -247,6 +247,18 @@ footer{text-align:center;padding:2rem;font-family:var(--title);font-size:.56rem;
         <span class="portal-glyph">𓋹</span>
         <div class="portal-name">Notes</div>
         <p class="portal-desc">Gleaned observations, marginal insights, and distilled wisdom drawn from the keeper's reading.</p>
+        <div class="portal-enter">Enter ›</div>
+      </div>
+      <div class="portal-card" id="symposiumPortal">
+        <span class="portal-glyph">𓂧</span>
+        <div class="portal-name">Symposium</div>
+        <p class="portal-desc">The great thinkers, restored to speech — converse with them as they were, in their own voice.</p>
+        <div class="portal-enter">Enter ›</div>
+      </div>
+      <div class="portal-card" id="pantheonPortal">
+        <span class="portal-glyph">𓊽</span>
+        <div class="portal-name">Pantheon</div>
+        <p class="portal-desc">The gods stand present and willing to be addressed — alone, in dialogue, or in council.</p>
         <div class="portal-enter">Enter ›</div>
       </div>
     </div>
@@ -568,7 +580,9 @@ document.addEventListener('click', async function(e) {
 
   // Portal cards
   const portal=t.closest('.portal-card');
-  if(portal){loadSection(portal.dataset.section,'');return;}
+  if(portal && portal.dataset.section){loadSection(portal.dataset.section,'');return;}
+  if(t.closest('#symposiumPortal')){ window.location.href='/agora?hall=symposium'; return; }
+  if(t.closest('#pantheonPortal')){ window.location.href='/agora?hall=pantheon'; return; }
 
   // Back buttons
   if(t.closest('#secBack')){ goHome(); return; }
