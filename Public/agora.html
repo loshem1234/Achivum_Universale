@@ -166,6 +166,7 @@ nav{position:fixed;top:0;width:100%;z-index:100;padding:1.1rem 3rem;display:flex
 <nav>
   <div class="nav-title" id="navHomeBtn">The Agora</div>
   <div class="nav-right">
+    <span class="nav-exit" id="adminLoginBtn" style="display:none">Admin Login</span>
     <button class="nav-exit" id="exitBtn">Return to Sanctum</button>
   </div>
 </nav>
@@ -243,6 +244,20 @@ nav{position:fixed;top:0;width:100%;z-index:100;padding:1.1rem 3rem;display:flex
 
 <button class="admin-fab" id="adminFab">+ New Figure</button>
 <div class="toast" id="toast"></div>
+
+<!-- ══ ADMIN LOGIN ══ -->
+<div class="overlay" id="loginOverlay">
+  <div class="panel" style="width:380px">
+    <button class="close-btn" data-close="loginOverlay">✕</button>
+    <div class="panel-title">Administrator</div>
+    <div class="form-group">
+      <label>Passphrase</label>
+      <input type="password" id="adminPassInput" placeholder="••••••••">
+    </div>
+    <div id="adminLoginErr" style="display:none;color:#c06060;font-family:var(--body);font-size:.85rem;font-style:italic;margin-bottom:.6rem">Incorrect passphrase.</div>
+    <button class="btn-pub" id="adminLoginSubmit">Enter ›</button>
+  </div>
+</div>
 
 <!-- ══ ADMIN: AUTHOR A FIGURE ══ -->
 <div class="overlay" id="adminOverlay">
@@ -361,10 +376,12 @@ const MODES = [
 
   if (adminToken) {
     try {
-      const r = await fetch('/api/health', { headers:{'x-admin-token':adminToken} });
+      const r = await fetch('/api/agora/verify-admin', { headers:{'x-admin-token':adminToken} });
       if (r.ok) { isAdmin = true; document.getElementById('adminFab').style.display = 'block'; }
+      else { sessionStorage.removeItem('au_admin_token'); adminToken = ''; }
     } catch {}
   }
+  if (!isAdmin) document.getElementById('adminLoginBtn').style.display = 'inline-block';
 
   setHall(currentHall);
 })();
@@ -615,6 +632,8 @@ document.addEventListener('click', (e) => {
   if (t.closest('#tabSymposium')) { setHall('symposium'); return; }
   if (t.closest('#tabPantheon')) { setHall('pantheon'); return; }
   if (t.closest('#selectModeBtn')) { toggleSelectMode(); return; }
+  if (t.closest('#adminLoginBtn')) { document.getElementById('loginOverlay').classList.add('show'); return; }
+  if (t.dataset.close === 'loginOverlay') { document.getElementById('loginOverlay').classList.remove('show'); return; }
   if (t.closest('#clearSelectionBtn')) { selectedIds.clear(); updateSelectBar(); renderFigureGrid(); return; }
   if (t.closest('#proceedBtn')) { openSetup(Array.from(selectedIds)); return; }
   if (t.closest('#setupBack')) { goHome(); return; }
@@ -648,6 +667,31 @@ async function fetchAdmin(method, url, body) {
 }
 
 function toast(msg) { const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2800); }
+
+document.getElementById('adminLoginSubmit').addEventListener('click', tryAdminLogin);
+document.getElementById('adminPassInput').addEventListener('keydown', e => { if (e.key === 'Enter') tryAdminLogin(); });
+
+async function tryAdminLogin() {
+  const pass = document.getElementById('adminPassInput').value;
+  const errEl = document.getElementById('adminLoginErr');
+  try {
+    const r = await fetch('/api/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ passphrase: pass }) });
+    if (!r.ok) { errEl.style.display = 'block'; return; }
+    const { token } = await r.json();
+    adminToken = token;
+    sessionStorage.setItem('au_admin_token', token);
+    isAdmin = true;
+    errEl.style.display = 'none';
+    document.getElementById('adminPassInput').value = '';
+    document.getElementById('loginOverlay').classList.remove('show');
+    document.getElementById('adminFab').style.display = 'block';
+    document.getElementById('adminLoginBtn').style.display = 'none';
+    toast('Logged in as administrator');
+  } catch (err) {
+    errEl.textContent = 'Login failed: ' + err.message;
+    errEl.style.display = 'block';
+  }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ADMIN: AUTHORING FORM
