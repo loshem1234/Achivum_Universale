@@ -68,6 +68,62 @@ db.exec(`
     created_at  TEXT DEFAULT (datetime('now')),
     updated_at  TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS agora_figures (
+    id              TEXT PRIMARY KEY,
+    hall            TEXT NOT NULL,
+    name            TEXT NOT NULL,
+    era_dates       TEXT,
+    epithet         TEXT,
+    voice_notes     TEXT,
+    temperament     TEXT,
+    characteristic_phrases TEXT,
+    core_doctrines  TEXT,
+    reasoning_method TEXT,
+    domain_tags     TEXT,
+    relationships   TEXT,
+    primary_works   TEXT,
+    portrait_prompt TEXT,
+    portrait_svg    TEXT,
+    bio_html        TEXT,
+    bibliography_html TEXT,
+    bio_generated_at TEXT,
+    hidden          INTEGER DEFAULT 0,
+    created_at      TEXT DEFAULT (datetime('now')),
+    updated_at      TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS agora_chunks (
+    id              TEXT PRIMARY KEY,
+    figure_id       TEXT NOT NULL REFERENCES agora_figures(id) ON DELETE CASCADE,
+    work_title      TEXT,
+    structural_mode TEXT,
+    content         TEXT NOT NULL,
+    embedding       TEXT NOT NULL,
+    created_at      TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_agora_chunks_figure ON agora_chunks(figure_id);
+
+  CREATE TABLE IF NOT EXISTS agora_conversations (
+    id              TEXT PRIMARY KEY,
+    hall            TEXT NOT NULL,
+    mode            TEXT NOT NULL,
+    autonomous      INTEGER DEFAULT 0,
+    figure_ids      TEXT NOT NULL,
+    created_at      TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS agora_messages (
+    id              TEXT PRIMARY KEY,
+    conversation_id TEXT NOT NULL REFERENCES agora_conversations(id) ON DELETE CASCADE,
+    speaker         TEXT NOT NULL,
+    speaker_figure_id TEXT,
+    content         TEXT NOT NULL,
+    created_at      TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_agora_messages_conv ON agora_messages(conversation_id);
 `);
 
 // ── QUERIES ─────────────────────────────────────────────────────────────────
@@ -158,6 +214,61 @@ const articleQueries = {
   categories:   db.prepare(`SELECT DISTINCT category FROM sanctum_articles WHERE section=? AND category IS NOT NULL AND published=1 ORDER BY category`),
 };
 
+// ── AGORA (Symposium & Pantheon) ─────────────────────────────────────────────
+const agoraQueries = {
+  listFigures: db.prepare(`SELECT id,hall,name,era_dates,epithet,portrait_svg,domain_tags FROM agora_figures WHERE hidden=0 ORDER BY hall, name`),
+  listFiguresByHall: db.prepare(`SELECT id,hall,name,era_dates,epithet,portrait_svg,domain_tags FROM agora_figures WHERE hall=? AND hidden=0 ORDER BY name`),
+  getFigureById: db.prepare(`SELECT * FROM agora_figures WHERE id=?`),
+  insertFigure: db.prepare(`
+    INSERT INTO agora_figures
+      (id,hall,name,era_dates,epithet,voice_notes,temperament,characteristic_phrases,
+       core_doctrines,reasoning_method,domain_tags,relationships,primary_works,
+       portrait_prompt,portrait_svg,hidden)
+    VALUES
+      (@id,@hall,@name,@era_dates,@epithet,@voice_notes,@temperament,@characteristic_phrases,
+       @core_doctrines,@reasoning_method,@domain_tags,@relationships,@primary_works,
+       @portrait_prompt,@portrait_svg,@hidden)
+  `),
+  updateFigure: db.prepare(`
+    UPDATE agora_figures SET
+      hall=@hall, name=@name, era_dates=@era_dates, epithet=@epithet,
+      voice_notes=@voice_notes, temperament=@temperament,
+      characteristic_phrases=@characteristic_phrases, core_doctrines=@core_doctrines,
+      reasoning_method=@reasoning_method, domain_tags=@domain_tags,
+      relationships=@relationships, primary_works=@primary_works,
+      portrait_prompt=@portrait_prompt, portrait_svg=@portrait_svg,
+      updated_at=datetime('now')
+    WHERE id=@id
+  `),
+  updateBioPage: db.prepare(`
+    UPDATE agora_figures SET bio_html=@bio_html, bibliography_html=@bibliography_html,
+      bio_generated_at=datetime('now'), updated_at=datetime('now')
+    WHERE id=@id
+  `),
+  softDeleteFigure: db.prepare(`UPDATE agora_figures SET hidden=1, updated_at=datetime('now') WHERE id=?`),
+
+  insertChunk: db.prepare(`
+    INSERT INTO agora_chunks (id,figure_id,work_title,structural_mode,content,embedding)
+    VALUES (@id,@figure_id,@work_title,@structural_mode,@content,@embedding)
+  `),
+  getChunksByFigure: db.prepare(`SELECT id,content,embedding FROM agora_chunks WHERE figure_id=?`),
+  countChunksByFigure: db.prepare(`SELECT COUNT(*) as n FROM agora_chunks WHERE figure_id=?`),
+  deleteChunksByFigure: db.prepare(`DELETE FROM agora_chunks WHERE figure_id=?`),
+  listWorksByFigure: db.prepare(`SELECT DISTINCT work_title FROM agora_chunks WHERE figure_id=? AND work_title IS NOT NULL AND work_title != ''`),
+
+  insertConversation: db.prepare(`
+    INSERT INTO agora_conversations (id,hall,mode,autonomous,figure_ids)
+    VALUES (@id,@hall,@mode,@autonomous,@figure_ids)
+  `),
+  getConversationById: db.prepare(`SELECT * FROM agora_conversations WHERE id=?`),
+
+  insertMessage: db.prepare(`
+    INSERT INTO agora_messages (id,conversation_id,speaker,speaker_figure_id,content)
+    VALUES (@id,@conversation_id,@speaker,@speaker_figure_id,@content)
+  `),
+  getMessagesByConversation: db.prepare(`SELECT * FROM agora_messages WHERE conversation_id=? ORDER BY created_at ASC`),
+};
+
 // ── PUBLIC API ───────────────────────────────────────────────────────────────
 module.exports = {
   getAll() {
@@ -217,6 +328,88 @@ module.exports = {
     delete(id)             { return articleQueries.delete.run(id); },
     categories(section)    { return articleQueries.categories.all(section).map(r=>r.category); },
   },
+
+  // Agora — Symposium & Pantheon living personas
+  agora: {
+    listFigures() {
+      return agoraQueries.listFigures.all();
+    },
+    listFiguresByHall(hall) {
+      return agoraQueries.listFiguresByHall.all(hall);
+    },
+    getFigureById(id) {
+      const row = agoraQueries.getFigureById.get(id);
+      return row ? { ...row, hidden: Boolean(row.hidden) } : null;
+    },
+    insertFigure(f) {
+      agoraQueries.insertFigure.run(serializeFigure(f));
+      return this.getFigureById(f.id);
+    },
+    updateFigure(f) {
+      agoraQueries.updateFigure.run(serializeFigure(f));
+      return this.getFigureById(f.id);
+    },
+    updateBioPage(id, bioHtml, bibliographyHtml) {
+      agoraQueries.updateBioPage.run({ id, bio_html: bioHtml, bibliography_html: bibliographyHtml });
+      return this.getFigureById(id);
+    },
+    deleteFigure(id) {
+      agoraQueries.deleteChunksByFigure.run(id);
+      agoraQueries.softDeleteFigure.run(id);
+    },
+    insertChunks(figureId, chunkRows) {
+      const insertMany = db.transaction((rows) => {
+        for (const r of rows) {
+          agoraQueries.insertChunk.run({
+            id: r.id,
+            figure_id: figureId,
+            work_title: r.work_title || '',
+            structural_mode: r.structural_mode || '',
+            content: r.content,
+            embedding: JSON.stringify(r.embedding),
+          });
+        }
+      });
+      insertMany(chunkRows);
+    },
+    getChunksByFigure(figureId) {
+      return agoraQueries.getChunksByFigure.all(figureId).map(r => ({
+        id: r.id, content: r.content, embedding: JSON.parse(r.embedding),
+      }));
+    },
+    countChunksByFigure(figureId) {
+      return agoraQueries.countChunksByFigure.get(figureId).n;
+    },
+    clearChunksForFigure(figureId) {
+      agoraQueries.deleteChunksByFigure.run(figureId);
+    },
+    listWorksByFigure(figureId) {
+      return agoraQueries.listWorksByFigure.all(figureId).map(r => r.work_title);
+    },
+    insertConversation(c) {
+      agoraQueries.insertConversation.run({
+        id: c.id, hall: c.hall, mode: c.mode,
+        autonomous: c.autonomous ? 1 : 0,
+        figure_ids: JSON.stringify(c.figure_ids || []),
+      });
+      return this.getConversationById(c.id);
+    },
+    getConversationById(id) {
+      const row = agoraQueries.getConversationById.get(id);
+      if (!row) return null;
+      return { ...row, autonomous: Boolean(row.autonomous), figure_ids: JSON.parse(row.figure_ids) };
+    },
+    insertMessage(m) {
+      agoraQueries.insertMessage.run({
+        id: m.id, conversation_id: m.conversation_id,
+        speaker: m.speaker, speaker_figure_id: m.speaker_figure_id || null,
+        content: m.content,
+      });
+    },
+    getMessagesByConversation(conversationId) {
+      return agoraQueries.getMessagesByConversation.all(conversationId);
+    },
+  },
 };
 
 // ── HELPERS ──────────────────────────────────────────────────────────────────
@@ -251,4 +444,25 @@ function serializeEntry(e) {
 
 function safeParseJSON(str, fallback) {
   try { return JSON.parse(str); } catch { return fallback; }
+}
+
+function serializeFigure(f) {
+  return {
+    id: f.id,
+    hall: f.hall || 'symposium',
+    name: f.name || '',
+    era_dates: f.era_dates || '',
+    epithet: f.epithet || '',
+    voice_notes: f.voice_notes || '',
+    temperament: f.temperament || '',
+    characteristic_phrases: f.characteristic_phrases || '',
+    core_doctrines: f.core_doctrines || '',
+    reasoning_method: f.reasoning_method || '',
+    domain_tags: f.domain_tags || '',
+    relationships: f.relationships || '',
+    primary_works: f.primary_works || '',
+    portrait_prompt: f.portrait_prompt || '',
+    portrait_svg: f.portrait_svg || null,
+    hidden: f.hidden ? 1 : 0,
+  };
 }
