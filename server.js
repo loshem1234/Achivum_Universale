@@ -459,6 +459,9 @@ app.get('/agora', (req, res) => {
   res.sendFile(path.join(__dirname, 'Public', 'agora.html'));
 });
 
+// Lightweight admin-token verification (properly gated, unlike /api/health)
+app.get('/api/agora/verify-admin', requireAdmin, (req, res) => res.json({ ok: true }));
+
 // ── Public-to-sanctum: browse figures ──
 app.get('/api/agora/figures', requireSanctum, (req, res) => {
   const { hall } = req.query;
