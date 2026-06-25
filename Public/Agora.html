@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Agora — Sanctum Sanctorum</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --void:#030205;--deep:#06040a;--surface:#0d0b14;--surface2:#14111e;--surface3:#1c1828;
+  --gold:#c9a84c;--gold-light:#e8c96a;--gold-pale:#f5e4a8;--gold-dim:#7a5f28;
+  --gold-glow:rgba(201,168,76,0.08);--gold-glow2:rgba(201,168,76,0.15);--gold-glow3:rgba(201,168,76,0.26);
+  --crimson:#6a1010;--crimson2:#3a0808;
+  --text:#ddd4b8;--text-muted:#9a8a68;--text-dim:#4a3e28;
+  --border:rgba(201,168,76,0.1);--border-med:rgba(201,168,76,0.2);--border-hi:rgba(201,168,76,0.38);
+  --serif:'Cormorant Garamond',Georgia,serif;--title:'Cinzel',serif;
+  --display:'Cinzel Decorative',serif;--body:'EB Garamond',Georgia,serif;
+}
+html,body{height:100%;background:var(--void);color:var(--text);font-family:var(--serif);font-size:17px;line-height:1.7;overflow-x:hidden}
+body{background-image:radial-gradient(ellipse at 50% 0%,rgba(106,16,16,0.14) 0%,transparent 55%),radial-gradient(ellipse at 50% 100%,rgba(42,20,80,0.18) 0%,transparent 50%)}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--void)}::-webkit-scrollbar-thumb{background:var(--gold-dim)}
+
+nav{position:fixed;top:0;width:100%;z-index:100;padding:1.1rem 3rem;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(180deg,rgba(3,2,5,0.96) 0%,transparent);border-bottom:1px solid rgba(201,168,76,0.06)}
+.nav-title{font-family:var(--display);font-size:.72rem;letter-spacing:.15em;color:var(--gold-dim);text-transform:uppercase;opacity:.55;cursor:pointer}
+.nav-right{display:flex;align-items:center;gap:1.5rem}
+.nav-exit{font-family:var(--title);font-size:.6rem;letter-spacing:.18em;color:var(--text-dim);text-transform:uppercase;cursor:pointer;background:none;border:1px solid rgba(201,168,76,0.1);padding:.3rem .8rem;transition:all .2s}
+.nav-exit:hover{color:var(--gold-dim);border-color:rgba(201,168,76,0.22)}
+
+.view{display:none}.view.active{display:block}
+
+/* ── HOME / HALL SELECT ── */
+.hero{min-height:46vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8rem 3rem 3rem}
+.pretitle{font-family:var(--title);font-size:.62rem;letter-spacing:.5em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:1.2rem;opacity:.6}
+.htitle{font-family:var(--display);font-size:clamp(2rem,5vw,3.6rem);font-weight:700;letter-spacing:.07em;color:var(--gold-light);text-transform:uppercase;margin-bottom:.6rem;text-shadow:0 0 60px rgba(201,168,76,0.2)}
+.hsub{font-family:var(--body);font-size:1.02rem;color:var(--text-muted);font-style:italic;max-width:560px;margin:0 auto}
+
+.hall-tabs{display:flex;justify-content:center;gap:2px;background:rgba(201,168,76,0.06);max-width:640px;margin:2.5rem auto 0}
+.hall-tab{flex:1;background:var(--surface);padding:1.1rem 1.5rem;text-align:center;cursor:pointer;font-family:var(--title);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);transition:all .2s;border-bottom:2px solid transparent}
+.hall-tab:hover{background:var(--surface2);color:var(--text-muted)}
+.hall-tab.active{color:var(--gold-light);border-bottom-color:var(--gold)}
+
+.figure-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:2px;background:rgba(201,168,76,0.06);max-width:1200px;margin:3rem auto;padding:0 3rem}
+.figure-card{background:var(--surface);padding:1.6rem 1.3rem;text-align:center;cursor:pointer;transition:background .22s,transform .22s}
+.figure-card:hover{background:var(--surface2);transform:translateY(-2px)}
+.figure-grid.select-mode .figure-card{box-shadow:inset 0 0 0 1px rgba(201,168,76,0.25)}
+.fc-portrait{width:84px;height:112px;margin:0 auto .9rem;border:1px solid var(--border-med);background:var(--void);overflow:hidden}
+.fc-portrait svg{width:100%;height:100%;display:block}
+.fc-name{font-family:var(--display);font-size:.86rem;letter-spacing:.04em;color:var(--gold-light);opacity:.9;margin-bottom:.35rem}
+.fc-era{font-family:var(--body);font-size:.78rem;color:var(--text-dim);font-style:italic}
+.empty-grid{text-align:center;padding:4rem 2rem;font-family:var(--body);font-style:italic;color:var(--text-dim);grid-column:1/-1}
+
+.select-bar{position:fixed;bottom:0;left:0;right:0;background:var(--surface2);border-top:1px solid var(--border-hi);padding:1rem 3rem;display:none;align-items:center;justify-content:space-between;z-index:80;box-shadow:0 -8px 30px rgba(0,0,0,.5)}
+.select-bar.show{display:flex}
+.select-bar-info{font-family:var(--serif);font-size:.92rem;color:var(--text-muted)}
+.select-bar-info strong{color:var(--gold-light);font-style:normal}
+.btn-gold{background:var(--gold-glow2);border:1px solid var(--gold);color:var(--gold-light);font-family:var(--title);font-size:.66rem;letter-spacing:.18em;padding:.65rem 1.4rem;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.btn-gold:hover{background:var(--gold-glow3)}
+.btn-ghost{background:none;border:1px solid var(--border-med);color:var(--text-dim);font-family:var(--title);font-size:.62rem;letter-spacing:.15em;padding:.55rem 1.1rem;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.btn-ghost:hover{border-color:var(--gold-dim);color:var(--text-muted)}
+
+/* ── BIO PAGE ── */
+.bio-wrap{max-width:780px;margin:0 auto;padding:7rem 3rem 4rem}
+.bio-back{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--serif);font-size:.82rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;cursor:pointer;margin-bottom:2rem;transition:color .2s}
+.bio-back:hover{color:var(--gold)}
+.bio-head{display:flex;gap:2rem;align-items:flex-start;margin-bottom:2.5rem;flex-wrap:wrap}
+.bio-portrait{width:160px;height:213px;border:1px solid var(--border-med);background:var(--void);flex-shrink:0;overflow:hidden}
+.bio-portrait svg{width:100%;height:100%;display:block}
+.bio-titles{flex:1;min-width:240px}
+.bio-epithet{font-family:var(--title);font-size:.62rem;letter-spacing:.25em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:.6rem}
+.bio-name{font-family:var(--display);font-size:clamp(1.6rem,3.4vw,2.4rem);letter-spacing:.05em;color:var(--gold-light);margin-bottom:.4rem}
+.bio-era{font-family:var(--body);font-size:.95rem;color:var(--text-muted);font-style:italic;margin-bottom:1rem}
+.bio-tags{display:flex;flex-wrap:wrap;gap:.4rem}
+.bio-tag{font-family:var(--serif);font-size:.74rem;color:var(--text-dim);border:1px solid var(--border);padding:.2rem .65rem}
+.bio-rule{height:1px;background:var(--border);margin:2rem 0;position:relative}
+.bio-rule::after{content:'𓋹';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--deep);padding:0 .8rem;font-size:.65rem;color:var(--gold-dim);opacity:.45}
+.bio-body p{font-family:var(--body);font-size:1.05rem;color:var(--text-muted);line-height:1.95;margin-bottom:1.2rem}
+.bio-section-label{font-family:var(--title);font-size:.62rem;letter-spacing:.22em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:1rem;opacity:.75}
+.bio-biblio ul{list-style:none;padding:0}
+.bio-biblio li{font-family:var(--body);font-size:.95rem;color:var(--text-dim);font-style:italic;padding:.4rem 0;border-bottom:1px solid var(--border)}
+.bio-empty{font-family:var(--body);font-style:italic;color:var(--text-dim);padding:2rem;text-align:center;border:1px solid var(--border)}
+.bio-actions{margin-top:2.5rem;display:flex;gap:.8rem;flex-wrap:wrap}
+
+/* ── CONVERSATION SETUP ── */
+.setup-wrap{max-width:680px;margin:0 auto;padding:7rem 3rem 4rem}
+.setup-step-label{font-family:var(--title);font-size:.62rem;letter-spacing:.22em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:1.2rem}
+.mode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;background:rgba(201,168,76,0.06);margin-bottom:2.5rem}
+.mode-card{background:var(--surface);padding:1.4rem;cursor:pointer;transition:background .2s}
+.mode-card:hover{background:var(--surface2)}
+.mode-card.active{background:var(--gold-glow2);box-shadow:inset 0 0 0 1px var(--gold)}
+.mode-name{font-family:var(--display);font-size:.84rem;color:var(--gold-light);margin-bottom:.4rem}
+.mode-desc{font-family:var(--body);font-size:.85rem;color:var(--text-dim);font-style:italic;line-height:1.6}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.4rem;border:1px solid var(--border);margin-bottom:2.5rem}
+.toggle-label{font-family:var(--serif);font-size:.95rem;color:var(--text-muted)}
+.toggle-sub{font-family:var(--body);font-size:.8rem;color:var(--text-dim);font-style:italic;margin-top:.2rem}
+.switch{position:relative;width:46px;height:24px;background:var(--void);border:1px solid var(--border-med);cursor:pointer;flex-shrink:0}
+.switch::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:var(--text-dim);transition:all .2s}
+.switch.on{background:var(--gold-glow2);border-color:var(--gold)}
+.switch.on::after{left:24px;background:var(--gold-light)}
+
+/* ── CHAT ROOM ── */
+.chat-wrap{max-width:760px;margin:0 auto;padding:6rem 1.5rem 1rem;display:flex;flex-direction:column;height:100vh}
+.chat-head{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.chat-roster{display:flex;gap:.6rem;flex-wrap:wrap}
+.chat-roster-chip{font-family:var(--title);font-size:.62rem;letter-spacing:.1em;color:var(--gold-dim);border:1px solid var(--border-med);padding:.3rem .7rem;text-transform:uppercase}
+.chat-log{flex:1;overflow-y:auto;padding:1.5rem;display:flex;flex-direction:column;gap:1.3rem}
+.msg{max-width:88%}
+.msg.user{align-self:flex-end;text-align:right}
+.msg.figure{align-self:flex-start}
+.msg-speaker{font-family:var(--title);font-size:.6rem;letter-spacing:.18em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:.4rem}
+.msg-bubble{font-family:var(--body);font-size:1rem;line-height:1.8;color:var(--text);padding:.9rem 1.2rem;border:1px solid var(--border);background:var(--surface)}
+.msg.user .msg-bubble{background:var(--surface2);border-color:var(--border-med)}
+.msg.figure .msg-bubble{font-style:italic}
+.thinking{font-family:var(--body);font-size:.88rem;color:var(--text-dim);font-style:italic;padding:.5rem 1.2rem}
+.chat-input-row{display:flex;gap:.7rem;padding:1.2rem 1.5rem;border-top:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+.chat-input{flex:1;min-width:160px;background:var(--void);border:1px solid var(--border-med);color:var(--text);font-family:var(--body);font-size:1rem;padding:.7rem 1rem;outline:none;transition:border-color .2s}
+.chat-input:focus{border-color:var(--gold)}
+.speaker-picker{display:flex;gap:.4rem;flex-wrap:wrap;padding:0 1.5rem 1rem}
+.speaker-pick-btn{font-family:var(--title);font-size:.62rem;letter-spacing:.1em;color:var(--text-dim);border:1px solid var(--border-med);padding:.4rem .8rem;text-transform:uppercase;cursor:pointer;transition:all .2s;background:none}
+.speaker-pick-btn:hover{color:var(--gold-light);border-color:var(--gold)}
+.continue-row{padding:0 1.5rem 1rem;display:flex;justify-content:center}
+
+/* ── ADMIN FORM ── */
+.admin-fab{position:fixed;bottom:2.5rem;right:2.5rem;background:var(--surface2);border:1px solid var(--gold-dim);color:var(--gold);font-family:var(--title);font-size:.62rem;letter-spacing:.18em;padding:.75rem 1.4rem;text-transform:uppercase;z-index:90;transition:all .22s;display:none;box-shadow:0 4px 28px rgba(0,0,0,.5);cursor:pointer}
+.admin-fab:hover{background:var(--gold-glow2);border-color:var(--gold)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(2,1,4,.94);z-index:200;align-items:flex-start;justify-content:center;overflow-y:auto;padding:2rem;backdrop-filter:blur(4px)}
+.overlay.show{display:flex}
+.panel{background:var(--surface);border:1px solid var(--border-hi);padding:2.5rem;width:680px;max-width:95vw;position:relative;margin:auto;box-shadow:0 20px 80px rgba(0,0,0,.7)}
+.panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);opacity:.5}
+.panel-title{font-family:var(--title);font-size:.8rem;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;margin-bottom:1.6rem;padding-bottom:.8rem;border-bottom:1px solid var(--border);text-align:center}
+.close-btn{position:absolute;top:.9rem;right:1.2rem;background:none;border:none;color:var(--text-dim);font-size:1rem;cursor:pointer;transition:color .2s;padding:.2rem .4rem}
+.close-btn:hover{color:var(--gold)}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-family:var(--title);font-size:.6rem;letter-spacing:.18em;color:var(--text-muted);text-transform:uppercase;margin-bottom:.35rem}
+.form-group .hint{font-size:.62rem;letter-spacing:0;text-transform:none;color:var(--text-dim);font-family:var(--body);font-style:italic;display:block;margin-top:.2rem}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--void);border:1px solid var(--border-med);color:var(--text);font-family:var(--body);font-size:.96rem;padding:.55rem .8rem;outline:none;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--gold)}
+.form-group select option{background:var(--void);color:var(--text)}
+.form-group textarea{resize:vertical;min-height:80px;line-height:1.6}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-tabs{display:flex;gap:2px;margin-bottom:1.4rem;background:rgba(201,168,76,0.06)}
+.form-tab{flex:1;text-align:center;padding:.6rem;font-family:var(--title);font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);cursor:pointer;background:var(--surface2)}
+.form-tab.active{color:var(--gold-light);background:var(--gold-glow2)}
+.form-pane{display:none}.form-pane.active{display:block}
+.btn-pub{width:100%;background:var(--gold-glow2);border:1px solid var(--gold);color:var(--gold-light);font-family:var(--title);font-size:.7rem;letter-spacing:.2em;padding:.8rem;text-transform:uppercase;cursor:pointer;transition:all .22s;margin-top:.5rem}
+.btn-pub:hover{background:var(--gold-glow3)}
+.btn-pub:disabled{opacity:.4;cursor:default}
+.btn-secondary{width:100%;background:none;border:1px solid var(--border-med);color:var(--text-muted);font-family:var(--title);font-size:.66rem;letter-spacing:.16em;padding:.65rem;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-top:.6rem}
+.btn-secondary:hover{border-color:var(--gold-dim);color:var(--gold-light)}
+.corpus-status{font-family:var(--body);font-size:.85rem;color:var(--text-dim);font-style:italic;margin:.6rem 0;padding:.6rem .9rem;border:1px solid var(--border);background:var(--void)}
+.progress-note{font-family:var(--body);font-size:.85rem;color:var(--gold-dim);font-style:italic;margin-top:.5rem}
+.fig-manage-row{display:flex;align-items:center;justify-content:space-between;padding:.6rem .9rem;border:1px solid var(--border);margin-bottom:.4rem}
+.fig-manage-name{font-family:var(--serif);font-size:.92rem;color:var(--text-muted)}
+.fig-manage-actions{display:flex;gap:.4rem}
+.tiny-btn{font-family:var(--title);font-size:.58rem;letter-spacing:.1em;color:var(--text-dim);border:1px solid var(--border-med);padding:.3rem .6rem;text-transform:uppercase;cursor:pointer;background:none}
+.tiny-btn:hover{color:var(--gold-light);border-color:var(--gold)}
+.tiny-btn.danger:hover{color:#c06060;border-color:rgba(192,96,96,.4)}
+
+.toast{position:fixed;bottom:2.5rem;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border-med);color:var(--text-muted);font-family:var(--serif);font-size:.88rem;padding:.65rem 1.6rem;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.lock-gate{min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:var(--body);font-style:italic;color:var(--text-dim)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-title" id="navHomeBtn">The Agora</div>
+  <div class="nav-right">
+    <button class="nav-exit" id="exitBtn">Return to Sanctum</button>
+  </div>
+</nav>
+
+<div id="lockGate" class="lock-gate">Verifying passage…</div>
+
+<!-- ══ HOME (hall + figure grid) ══ -->
+<div class="view" id="view-home">
+  <div class="hero">
+    <div class="pretitle">Living Personas</div>
+    <h1 class="htitle" id="hallTitle">The Agora</h1>
+    <p class="hsub" id="hallSub">Choose a hall. Choose who shall speak.</p>
+  </div>
+  <div class="hall-tabs">
+    <div class="hall-tab" id="tabSymposium" data-hall="symposium">Symposium</div>
+    <div class="hall-tab" id="tabPantheon" data-hall="pantheon">Pantheon</div>
+  </div>
+  <div style="text-align:center;margin-top:1.5rem">
+    <button class="btn-ghost" id="selectModeBtn">Select Several to Converse Together</button>
+  </div>
+  <div class="figure-grid" id="figureGrid"></div>
+</div>
+
+<div class="select-bar" id="selectBar">
+  <div class="select-bar-info" id="selectBarInfo"></div>
+  <div style="display:flex;gap:.7rem">
+    <button class="btn-ghost" id="clearSelectionBtn">Clear</button>
+    <button class="btn-gold" id="proceedBtn">Begin Conversation ›</button>
+  </div>
+</div>
+
+<!-- ══ BIO PAGE ══ -->
+<div class="view" id="view-bio">
+  <div class="bio-wrap" id="bioContent"></div>
+</div>
+
+<!-- ══ CONVERSATION SETUP ══ -->
+<div class="view" id="view-setup">
+  <div class="setup-wrap">
+    <div class="bio-back" id="setupBack"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>Back</div>
+    <div class="setup-step-label" id="setupRoster"></div>
+
+    <div class="mode-grid" id="modeGrid"></div>
+
+    <div class="toggle-row" id="autonomyRow" style="display:none">
+      <div>
+        <div class="toggle-label">Autonomous conversation</div>
+        <div class="toggle-sub">Figures decide among themselves who speaks. Off: you choose who responds each turn.</div>
+      </div>
+      <div class="switch" id="autonomySwitch"></div>
+    </div>
+
+    <button class="btn-gold" id="startConvoBtn" style="width:100%">Enter the Conversation ›</button>
+  </div>
+</div>
+
+<!-- ══ CHAT ROOM ══ -->
+<div class="view" id="view-chat">
+  <div class="chat-wrap">
+    <div class="chat-head">
+      <div class="chat-roster" id="chatRoster"></div>
+      <button class="btn-ghost" id="leaveChatBtn">Leave</button>
+    </div>
+    <div class="chat-log" id="chatLog"></div>
+    <div class="speaker-picker" id="speakerPicker" style="display:none"></div>
+    <div class="continue-row" id="continueRow" style="display:none">
+      <button class="btn-ghost" id="continueBtn">Let them continue speaking ›</button>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" class="chat-input" id="chatInput" placeholder="Speak…">
+      <button class="btn-gold" id="sendBtn">Send</button>
+    </div>
+  </div>
+</div>
+
+<button class="admin-fab" id="adminFab">+ New Figure</button>
+<div class="toast" id="toast"></div>
+
+<!-- ══ ADMIN: AUTHOR A FIGURE ══ -->
+<div class="overlay" id="adminOverlay">
+  <div class="panel">
+    <button class="close-btn" id="closeAdmin">✕</button>
+    <div class="panel-title" id="adminPanelTitle">Author a New Figure</div>
+
+    <div class="form-tabs">
+      <div class="form-tab active" data-pane="profile">Profile</div>
+      <div class="form-tab" data-pane="corpus">Source Texts</div>
+      <div class="form-tab" data-pane="art">Portrait &amp; Bio</div>
+      <div class="form-tab" data-pane="manage">Manage</div>
+    </div>
+
+    <!-- PROFILE PANE -->
+    <div class="form-pane active" id="pane-profile">
+      <div class="form-row">
+        <div class="form-group"><label>Name</label><input type="text" id="fName" placeholder="e.g. Marcus Aurelius"></div>
+        <div class="form-group"><label>Hall</label>
+          <select id="fHall"><option value="symposium">Symposium</option><option value="pantheon">Pantheon</option></select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Draft from source texts <span class="hint">Paste excerpts below, then draft — the AI will propose the fields beneath. Review and edit before saving.</span></label>
+        <textarea id="fDraftSource" placeholder="Paste representative excerpts of this figure's own words or the primary record about them…"></textarea>
+        <button class="btn-secondary" id="draftBtn" type="button">Draft Persona with AI ›</button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group"><label>Era / Dates</label><input type="text" id="fEra" placeholder="e.g. 121–180 AD"></div>
+        <div class="form-group"><label>Epithet</label><input type="text" id="fEpithet" placeholder="e.g. The Stoic Emperor"></div>
+      </div>
+      <div class="form-group"><label>Voice Notes</label><textarea id="fVoice" placeholder="Cadence, diction, rhetorical habits…"></textarea></div>
+      <div class="form-group"><label>Temperament</label><textarea id="fTemperament" placeholder="Personality, emotional register, what provokes or calms them…"></textarea></div>
+      <div class="form-group"><label>Characteristic Phrases</label><textarea id="fPhrases" placeholder="Verbal tics, recurring images, turns of phrase…"></textarea></div>
+      <div class="form-group"><label>Core Doctrines</label><textarea id="fDoctrines" placeholder="Their actual substantive beliefs and positions…"></textarea></div>
+      <div class="form-group"><label>Reasoning Method <span class="hint">How they think — lets the agent extrapolate authentically to unfamiliar topics</span></label><textarea id="fReasoning" placeholder="Their method of argument, first principles…"></textarea></div>
+      <div class="form-group"><label>Domain Tags <span class="hint">Free text — implications and conflicts between tags are inferred at conversation time</span></label><input type="text" id="fTags" placeholder="e.g. stoicism, death, duty, the cosmos, self-governance"></div>
+      <div class="form-group"><label>Relationships</label><textarea id="fRelationships" placeholder="Known relationships, rivalries, allegiances to other figures…"></textarea></div>
+      <div class="form-group"><label>Primary Works <span class="hint">For the public bibliography</span></label><textarea id="fWorks" placeholder="e.g. Meditations"></textarea></div>
+
+      <button class="btn-pub" id="saveProfileBtn" type="button">Save Figure</button>
+    </div>
+
+    <!-- CORPUS PANE -->
+    <div class="form-pane" id="pane-corpus">
+      <div class="corpus-status" id="corpusStatus">Save the figure's profile first to begin building their corpus.</div>
+      <div class="form-group"><label>Work Title</label><input type="text" id="cWorkTitle" placeholder="e.g. Meditations, Book IV"></div>
+      <div class="form-group"><label>Paste Text</label><textarea id="cText" style="min-height:200px" placeholder="Paste the full text of this work, or a substantial excerpt…"></textarea></div>
+      <button class="btn-pub" id="ingestBtn" type="button">Ingest into Corpus ›</button>
+      <div class="progress-note" id="ingestProgress" style="display:none"></div>
+    </div>
+
+    <!-- ART/BIO PANE -->
+    <div class="form-pane" id="pane-art">
+      <div class="form-group"><label>Portrait Prompt</label><textarea id="fPortraitPrompt" placeholder="Visual description for the SVG portrait — symbolic, evocative, dark antiquarian aesthetic…"></textarea></div>
+      <button class="btn-secondary" id="genPortraitBtn" type="button">Generate Portrait ›</button>
+      <div id="portraitPreview" style="margin-top:1rem;display:none">
+        <div class="fc-portrait" style="width:110px;height:147px;margin:0"></div>
+      </div>
+      <div class="form-group" style="margin-top:1.5rem">
+        <label>Public Bio Page</label>
+        <div class="hint" style="margin-bottom:.6rem;display:block">Generated from the profile fields. Regenerate anytime — this never happens automatically when you edit fields above.</div>
+        <button class="btn-secondary" id="genBioBtn" type="button">Regenerate Bio Page ›</button>
+      </div>
+    </div>
+
+    <!-- MANAGE PANE -->
+    <div class="form-pane" id="pane-manage">
+      <div class="form-group"><label>Existing Figures</label></div>
+      <div id="manageList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+let sanctumToken = sessionStorage.getItem('sanctum_token') || '';
+let adminToken   = sessionStorage.getItem('au_admin_token') || '';
+let isAdmin      = false;
+
+let currentHall    = new URLSearchParams(location.search).get('hall') || 'symposium';
+let allFigures     = [];
+let selectedIds     = new Set();
+let editingFigureId = null;
+
+let activeMode       = 'solo';      // solo | dialogue | roundtable | assembly
+let autonomous       = false;
+let currentConvo     = null;
+let convoFigures     = [];
+
+const HALL_META = {
+  symposium: { title:'The Symposium', sub:'The great thinkers, restored to speech. Converse with them as they were.' },
+  pantheon:  { title:'The Pantheon',  sub:'The gods stand present and willing to be addressed.' },
+};
+
+const MODES = [
+  { id:'solo',       name:'Solo Audience',  desc:'Speak with a single figure, one to one.', min:1, max:1 },
+  { id:'dialogue',   name:'Dialogue',       desc:'Two figures conversing, with you present.', min:2, max:2 },
+  { id:'roundtable', name:'Roundtable',     desc:'Several figures together — you choose who speaks each turn.', min:2, max:6 },
+  { id:'assembly',   name:'Assembly',       desc:'Several figures together — they decide among themselves who speaks.', min:2, max:6 },
+];
+
+// ── AUTH GUARD ──────────────────────────────────────────────────────────────
+(async () => {
+  if (!sanctumToken) { window.location.href = '/sanctum'; return; }
+  try {
+    const r = await fetch('/api/sanctum/verify', { headers:{'x-sanctum-token':sanctumToken} });
+    if (!r.ok) { sessionStorage.removeItem('sanctum_token'); window.location.href='/sanctum'; return; }
+  } catch { window.location.href = '/sanctum'; return; }
+
+  document.getElementById('lockGate').style.display = 'none';
+  document.getElementById('view-home').classList.add('active');
+
+  if (adminToken) {
+    try {
+      const r = await fetch('/api/health', { headers:{'x-admin-token':adminToken} });
+      if (r.ok) { isAdmin = true; document.getElementById('adminFab').style.display = 'block'; }
+    } catch {}
+  }
+
+  setHall(currentHall);
+})();
+
+// ── VIEWS ────────────────────────────────────────────────────────────────────
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goHome() {
+  showView('home');
+  selectedIds.clear();
+  selectMode = false;
+  const btn = document.getElementById('selectModeBtn');
+  if (btn) { btn.textContent = 'Select Several to Converse Together'; btn.classList.remove('btn-gold'); btn.classList.add('btn-ghost'); }
+  document.getElementById('figureGrid').classList.remove('select-mode');
+  updateSelectBar();
+  renderFigureGrid();
+}
+
+// ── HALL / FIGURE GRID ──────────────────────────────────────────────────────
+async function setHall(hall) {
+  currentHall = hall;
+  document.getElementById('tabSymposium').classList.toggle('active', hall === 'symposium');
+  document.getElementById('tabPantheon').classList.toggle('active', hall === 'pantheon');
+  document.getElementById('hallTitle').textContent = HALL_META[hall].title;
+  document.getElementById('hallSub').textContent = HALL_META[hall].sub;
+  selectedIds.clear();
+  updateSelectBar();
+
+  allFigures = await fetchSanctum(`/api/agora/figures?hall=${hall}`);
+  renderFigureGrid();
+}
+
+function renderFigureGrid() {
+  const grid = document.getElementById('figureGrid');
+  if (!allFigures.length) {
+    grid.innerHTML = `<div class="empty-grid">No one has yet been called into the ${currentHall === 'pantheon' ? 'Pantheon' : 'Symposium'}. The keeper has not yet spoken them into being.</div>`;
+    return;
+  }
+  grid.innerHTML = '';
+  allFigures.forEach(f => {
+    const card = document.createElement('div');
+    card.className = 'figure-card';
+    card.dataset.id = f.id;
+    card.innerHTML = `
+      <div class="fc-portrait">${f.portrait_svg || fallbackPortraitSvg(f.name)}</div>
+      <div class="fc-name">${f.name}</div>
+      <div class="fc-era">${f.era_dates || ''}</div>`;
+    card.addEventListener('click', (e) => onFigureCardClick(f, e));
+    grid.appendChild(card);
+  });
+}
+
+let selectMode = false;
+
+function onFigureCardClick(figure, e) {
+  if (selectMode) {
+    toggleSelect(figure.id, e.currentTarget);
+  } else {
+    openBio(figure.id);
+  }
+}
+
+function toggleSelect(id, cardEl) {
+  if (selectedIds.has(id)) { selectedIds.delete(id); cardEl.style.boxShadow = ''; }
+  else { selectedIds.add(id); cardEl.style.boxShadow = 'inset 0 0 0 2px var(--gold)'; }
+  updateSelectBar();
+}
+
+function toggleSelectMode() {
+  selectMode = !selectMode;
+  const btn = document.getElementById('selectModeBtn');
+  btn.textContent = selectMode ? 'Cancel Selection' : 'Select Several to Converse Together';
+  btn.classList.toggle('btn-gold', selectMode);
+  btn.classList.toggle('btn-ghost', !selectMode);
+  document.getElementById('figureGrid').classList.toggle('select-mode', selectMode);
+  if (!selectMode) { selectedIds.clear(); updateSelectBar(); renderFigureGrid(); }
+}
+
+function updateSelectBar() {
+  const bar = document.getElementById('selectBar');
+  if (selectedIds.size === 0) { bar.classList.remove('show'); return; }
+  bar.classList.add('show');
+  const names = allFigures.filter(f => selectedIds.has(f.id)).map(f => f.name);
+  document.getElementById('selectBarInfo').innerHTML = `<strong>${names.join(', ')}</strong> selected`;
+}
+
+// ── BIO PAGE ─────────────────────────────────────────────────────────────────
+async function openBio(id) {
+  const f = await fetchSanctum(`/api/agora/figures/${id}`);
+  const tags = (f.domain_tags || '').split(',').map(t => t.trim()).filter(Boolean);
+  document.getElementById('bioContent').innerHTML = `
+    <div class="bio-back" id="bioBack"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>Back to the ${f.hall === 'pantheon' ? 'Pantheon' : 'Symposium'}</div>
+    <div class="bio-head">
+      <div class="bio-portrait">${f.portrait_svg || fallbackPortraitSvg(f.name)}</div>
+      <div class="bio-titles">
+        ${f.epithet ? `<div class="bio-epithet">${f.epithet}</div>` : ''}
+        <div class="bio-name">${f.name}</div>
+        <div class="bio-era">${f.era_dates || ''}</div>
+        <div class="bio-tags">${tags.map(t => `<span class="bio-tag">${t}</span>`).join('')}</div>
+      </div>
+    </div>
+    <div class="bio-rule"></div>
+    <div class="bio-section-label">Biography</div>
+    <div class="bio-body">${f.bio_html || `<div class="bio-empty">No biography has been written yet. ${isAdmin ? 'Use the admin panel to generate one.' : 'The keeper has not yet spoken of them.'}</div>`}</div>
+    ${f.bibliography_html ? `<div class="bio-rule"></div><div class="bio-section-label">Primary Works</div><div class="bio-biblio">${f.bibliography_html}</div>` : ''}
+    <div class="bio-actions">
+      <button class="btn-gold" id="bioSpeakBtn">Speak with ${f.name} ›</button>
+    </div>`;
+  showView('bio');
+  document.getElementById('bioSpeakBtn').dataset.id = f.id;
+}
+
+// ── CONVERSATION SETUP ──────────────────────────────────────────────────────
+function openSetup(figureIds) {
+  selectedIds = new Set(figureIds);
+  const names = allFigures.filter(f => selectedIds.has(f.id)).map(f => f.name);
+  document.getElementById('setupRoster').textContent = `Present: ${names.join(', ')}`;
+
+  const grid = document.getElementById('modeGrid');
+  grid.innerHTML = '';
+  const n = selectedIds.size;
+  MODES.forEach(m => {
+    if (n < m.min || n > m.max) return;
+    const card = document.createElement('div');
+    card.className = 'mode-card' + (m.id === activeMode ? ' active' : '');
+    card.dataset.mode = m.id;
+    card.innerHTML = `<div class="mode-name">${m.name}</div><div class="mode-desc">${m.desc}</div>`;
+    card.addEventListener('click', () => {
+      activeMode = m.id;
+      document.querySelectorAll('.mode-card').forEach(c => c.classList.toggle('active', c.dataset.mode === m.id));
+      document.getElementById('autonomyRow').style.display = (m.id === 'roundtable' || m.id === 'assembly') ? 'flex' : 'none';
+      autonomous = m.id === 'assembly';
+      document.getElementById('autonomySwitch').classList.toggle('on', autonomous);
+    });
+    grid.appendChild(card);
+  });
+  // Default to first available mode for this figure count
+  const available = MODES.filter(m => n >= m.min && n <= m.max);
+  if (available.length && !available.find(m => m.id === activeMode)) {
+    activeMode = available[0].id;
+    autonomous = activeMode === 'assembly';
+  }
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.toggle('active', c.dataset.mode === activeMode));
+  document.getElementById('autonomyRow').style.display = (activeMode === 'roundtable' || activeMode === 'assembly') ? 'flex' : 'none';
+  document.getElementById('autonomySwitch').classList.toggle('on', autonomous);
+
+  showView('setup');
+}
+
+document.getElementById('autonomySwitch').addEventListener('click', () => {
+  autonomous = !autonomous;
+  document.getElementById('autonomySwitch').classList.toggle('on', autonomous);
+});
+
+document.getElementById('startConvoBtn').addEventListener('click', async () => {
+  try {
+    const convo = await fetchSanctumJSON('POST', '/api/agora/conversations', {
+      hall: currentHall, mode: activeMode, autonomous, figureIds: Array.from(selectedIds),
+    });
+    currentConvo = convo;
+    convoFigures = allFigures.filter(f => selectedIds.has(f.id));
+    enterChat();
+  } catch (err) { alert('Could not begin: ' + err.message); }
+});
+
+// ── CHAT ROOM ────────────────────────────────────────────────────────────────
+function enterChat() {
+  document.getElementById('chatRoster').innerHTML = convoFigures.map(f => `<span class="chat-roster-chip">${f.name}</span>`).join('');
+  document.getElementById('chatLog').innerHTML = '';
+
+  renderSpeakerPicker();
+  document.getElementById('continueRow').style.display = (autonomous && activeMode !== 'solo') ? 'flex' : 'none';
+
+  showView('chat');
+}
+
+function renderSpeakerPicker() {
+  const el = document.getElementById('speakerPicker');
+  if (autonomous || activeMode === 'solo') { el.style.display = 'none'; return; }
+  el.style.display = 'flex';
+  el.innerHTML = `<span style="font-family:var(--body);font-size:.82rem;color:var(--text-dim);font-style:italic;align-self:center;margin-right:.4rem">Call on:</span>` +
+    convoFigures.map(f => `<button class="speaker-pick-btn" data-id="${f.id}">${f.name}</button>`).join('');
+  el.querySelectorAll('.speaker-pick-btn').forEach(btn => {
+    btn.addEventListener('click', () => sendMessage(null, btn.dataset.id));
+  });
+}
+
+function appendMessage(speakerName, content, isUser) {
+  const log = document.getElementById('chatLog');
+  const div = document.createElement('div');
+  div.className = 'msg ' + (isUser ? 'user' : 'figure');
+  div.innerHTML = `<div class="msg-speaker">${isUser ? 'You' : speakerName}</div><div class="msg-bubble">${escHtml(content)}</div>`;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function appendThinking(label) {
+  const log = document.getElementById('chatLog');
+  const div = document.createElement('div');
+  div.className = 'thinking';
+  div.id = 'thinkingIndicator';
+  div.textContent = label;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  return div;
+}
+
+document.getElementById('sendBtn').addEventListener('click', () => doSend());
+document.getElementById('chatInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSend(); });
+
+function doSend() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  const speakerFigureId = (activeMode === 'solo') ? convoFigures[0].id : null;
+  sendMessage(text, speakerFigureId);
+}
+
+document.getElementById('continueBtn').addEventListener('click', () => sendMessage(null, null));
+
+async function sendMessage(content, speakerFigureId) {
+  if (content) appendMessage(null, content, true);
+  const thinking = appendThinking('The hall considers…');
+  try {
+    const result = await fetchSanctumJSON('POST', `/api/agora/conversations/${currentConvo.id}/message`, {
+      content: content || undefined, speakerFigureId: speakerFigureId || undefined,
+    });
+    thinking.remove();
+    (result.responses || []).forEach(r => appendMessage(r.figureName, r.content, false));
+  } catch (err) {
+    thinking.remove();
+    appendMessage('The Hall', 'Something interrupted the conversation: ' + err.message, false);
+  }
+}
+
+document.getElementById('leaveChatBtn').addEventListener('click', goHome);
+
+// ── EVENT DELEGATION (nav, tabs, etc.) ──────────────────────────────────────
+document.addEventListener('click', (e) => {
+  const t = e.target;
+  if (t.closest('#navHomeBtn')) { goHome(); return; }
+  if (t.id === 'exitBtn') { window.location.href = '/sanctum/inner'; return; }
+  if (t.closest('#tabSymposium')) { setHall('symposium'); return; }
+  if (t.closest('#tabPantheon')) { setHall('pantheon'); return; }
+  if (t.closest('#selectModeBtn')) { toggleSelectMode(); return; }
+  if (t.closest('#clearSelectionBtn')) { selectedIds.clear(); updateSelectBar(); renderFigureGrid(); return; }
+  if (t.closest('#proceedBtn')) { openSetup(Array.from(selectedIds)); return; }
+  if (t.closest('#setupBack')) { goHome(); return; }
+  if (t.closest('#bioBack')) { goHome(); return; }
+  if (t.closest('#bioSpeakBtn')) { openSetup([t.closest('#bioSpeakBtn').dataset.id]); return; }
+});
+
+function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fallbackPortraitSvg(name) {
+  const short = (name||'').length > 16 ? name.slice(0,14)+'…' : (name||'');
+  return `<svg viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg"><rect width="300" height="400" fill="#0f0d0b"/><circle cx="150" cy="160" r="60" fill="none" stroke="#c9a84c" stroke-width="0.6" opacity="0.3"/><text x="150" y="300" text-anchor="middle" font-family="serif" font-size="16" fill="#c9a84c" opacity="0.55">${short}</text></svg>`;
+}
+
+// ── FETCH HELPERS ────────────────────────────────────────────────────────────
+async function fetchSanctum(url) {
+  const r = await fetch(url, { headers:{'x-sanctum-token':sanctumToken} });
+  if (!r.ok) { const e=await r.json().catch(()=>({})); throw new Error(e.error||`HTTP ${r.status}`); }
+  return r.json();
+}
+async function fetchSanctumJSON(method, url, body) {
+  const r = await fetch(url, { method, headers:{'Content-Type':'application/json','x-sanctum-token':sanctumToken}, body: JSON.stringify(body||{}) });
+  if (!r.ok) { const e=await r.json().catch(()=>({})); throw new Error(e.error||`HTTP ${r.status}`); }
+  return r.json();
+}
+async function fetchAdmin(method, url, body) {
+  const opts = { method, headers:{'x-admin-token':adminToken} };
+  if (body !== undefined) { opts.headers['Content-Type']='application/json'; opts.body=JSON.stringify(body); }
+  const r = await fetch(url, opts);
+  if (!r.ok) { const e=await r.json().catch(()=>({})); throw new Error(e.error||`HTTP ${r.status}`); }
+  return r.json();
+}
+
+function toast(msg) { const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2800); }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ADMIN: AUTHORING FORM
+// ─────────────────────────────────────────────────────────────────────────────
+
+document.getElementById('adminFab').addEventListener('click', () => {
+  resetAdminForm();
+  document.getElementById('adminOverlay').classList.add('show');
+  loadManageList();
+});
+document.getElementById('closeAdmin').addEventListener('click', () => document.getElementById('adminOverlay').classList.remove('show'));
+
+document.querySelectorAll('.form-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.form-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.form-pane').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('pane-' + tab.dataset.pane).classList.add('active');
+    if (tab.dataset.pane === 'manage') loadManageList();
+  });
+});
+
+function resetAdminForm() {
+  editingFigureId = null;
+  document.getElementById('adminPanelTitle').textContent = 'Author a New Figure';
+  ['fName','fEra','fEpithet','fVoice','fTemperament','fPhrases','fDoctrines','fReasoning','fTags','fRelationships','fWorks','fDraftSource','fPortraitPrompt','cWorkTitle','cText'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('fHall').value = currentHall;
+  document.getElementById('corpusStatus').textContent = "Save the figure's profile first to begin building their corpus.";
+  document.getElementById('portraitPreview').style.display = 'none';
+}
+
+document.getElementById('draftBtn').addEventListener('click', async () => {
+  const name = document.getElementById('fName').value.trim();
+  const sourceText = document.getElementById('fDraftSource').value.trim();
+  if (!name) { alert('Enter a name first.'); return; }
+  if (!sourceText) { alert('Paste at least one excerpt to draft from.'); return; }
+  const btn = document.getElementById('draftBtn');
+  btn.textContent = 'Drafting…'; btn.disabled = true;
+  try {
+    const draft = await fetchAdmin('POST', '/api/agora/draft-persona', {
+      name, hall: document.getElementById('fHall').value, sourceExcerpts: [sourceText],
+    });
+    document.getElementById('fEra').value = draft.era_dates || '';
+    document.getElementById('fEpithet').value = draft.epithet || '';
+    document.getElementById('fVoice').value = draft.voice_notes || '';
+    document.getElementById('fTemperament').value = draft.temperament || '';
+    document.getElementById('fPhrases').value = draft.characteristic_phrases || '';
+    document.getElementById('fDoctrines').value = draft.core_doctrines || '';
+    document.getElementById('fReasoning').value = draft.reasoning_method || '';
+    document.getElementById('fTags').value = draft.domain_tags || '';
+    document.getElementById('fRelationships').value = draft.relationships || '';
+    document.getElementById('fWorks').value = draft.primary_works || '';
+    document.getElementById('fPortraitPrompt').value = draft.portrait_prompt || '';
+    toast('Draft ready — review and edit before saving');
+  } catch (err) { alert('Drafting failed: ' + err.message); }
+  btn.textContent = 'Draft Persona with AI ›'; btn.disabled = false;
+});
+
+function collectProfileFields() {
+  return {
+    name: document.getElementById('fName').value.trim(),
+    hall: document.getElementById('fHall').value,
+    era_dates: document.getElementById('fEra').value.trim(),
+    epithet: document.getElementById('fEpithet').value.trim(),
+    voice_notes: document.getElementById('fVoice').value.trim(),
+    temperament: document.getElementById('fTemperament').value.trim(),
+    characteristic_phrases: document.getElementById('fPhrases').value.trim(),
+    core_doctrines: document.getElementById('fDoctrines').value.trim(),
+    reasoning_method: document.getElementById('fReasoning').value.trim(),
+    domain_tags: document.getElementById('fTags').value.trim(),
+    relationships: document.getElementById('fRelationships').value.trim(),
+    primary_works: document.getElementById('fWorks').value.trim(),
+    portrait_prompt: document.getElementById('fPortraitPrompt').value.trim(),
+  };
+}
+
+document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+  const fields = collectProfileFields();
+  if (!fields.name) { alert('Name is required.'); return; }
+  try {
+    let saved;
+    if (editingFigureId) saved = await fetchAdmin('PUT', `/api/agora/figures/${editingFigureId}`, fields);
+    else saved = await fetchAdmin('POST', '/api/agora/figures', fields);
+    editingFigureId = saved.id;
+    document.getElementById('adminPanelTitle').textContent = 'Editing: ' + saved.name;
+    toast('Figure saved');
+    refreshCorpusStatus();
+    if (saved.hall === currentHall) setHall(currentHall);
+  } catch (err) { alert('Save failed: ' + err.message); }
+});
+
+async function refreshCorpusStatus() {
+  if (!editingFigureId) return;
+  try {
+    const status = await fetchAdmin('GET', `/api/agora/figures/${editingFigureId}/corpus`);
+    document.getElementById('corpusStatus').textContent = status.chunkCount
+      ? `${status.chunkCount} passages ingested across: ${status.works.join(', ') || 'untitled texts'}`
+      : 'No source texts ingested yet.';
+  } catch {}
+}
+
+document.getElementById('ingestBtn').addEventListener('click', async () => {
+  if (!editingFigureId) { alert("Save the figure's profile first."); return; }
+  const text = document.getElementById('cText').value.trim();
+  const workTitle = document.getElementById('cWorkTitle').value.trim();
+  if (!text) { alert('Paste some text to ingest.'); return; }
+  const btn = document.getElementById('ingestBtn');
+  const progressEl = document.getElementById('ingestProgress');
+  btn.disabled = true; btn.textContent = 'Ingesting…'; progressEl.style.display = 'block';
+  try {
+    const { jobId } = await fetchAdmin('POST', `/api/agora/figures/${editingFigureId}/ingest-text`, { text, workTitle });
+    await pollIngestJob(jobId, progressEl);
+    document.getElementById('cText').value = '';
+    document.getElementById('cWorkTitle').value = '';
+    toast('Corpus updated');
+    refreshCorpusStatus();
+  } catch (err) { alert('Ingestion failed: ' + err.message); }
+  btn.disabled = false; btn.textContent = 'Ingest into Corpus ›'; progressEl.style.display = 'none';
+});
+
+function pollIngestJob(jobId, progressEl) {
+  return new Promise((resolve, reject) => {
+    const interval = setInterval(async () => {
+      try {
+        const job = await fetchAdmin('GET', `/api/agora/ingest/${jobId}`);
+        progressEl.textContent = job.message || '';
+        if (job.status === 'complete') { clearInterval(interval); resolve(job.result); }
+        else if (job.status === 'error') { clearInterval(interval); reject(new Error(job.error)); }
+      } catch (err) { clearInterval(interval); reject(err); }
+    }, 1500);
+  });
+}
+
+document.getElementById('genPortraitBtn').addEventListener('click', async () => {
+  if (!editingFigureId) { alert("Save the figure's profile first."); return; }
+  const btn = document.getElementById('genPortraitBtn');
+  btn.disabled = true; btn.textContent = 'Generating…';
+  try {
+    // Persist the latest prompt text before generating
+    await fetchAdmin('PUT', `/api/agora/figures/${editingFigureId}`, collectProfileFields());
+    const updated = await fetchAdmin('POST', `/api/agora/figures/${editingFigureId}/generate-portrait`);
+    const preview = document.getElementById('portraitPreview');
+    preview.style.display = 'block';
+    preview.querySelector('.fc-portrait').innerHTML = updated.portrait_svg || '';
+    toast('Portrait generated');
+  } catch (err) { alert('Portrait generation failed: ' + err.message); }
+  btn.disabled = false; btn.textContent = 'Generate Portrait ›';
+});
+
+document.getElementById('genBioBtn').addEventListener('click', async () => {
+  if (!editingFigureId) { alert("Save the figure's profile first."); return; }
+  const btn = document.getElementById('genBioBtn');
+  btn.disabled = true; btn.textContent = 'Writing…';
+  try {
+    await fetchAdmin('PUT', `/api/agora/figures/${editingFigureId}`, collectProfileFields());
+    await fetchAdmin('POST', `/api/agora/figures/${editingFigureId}/generate-bio`);
+    toast('Bio page regenerated');
+  } catch (err) { alert('Bio generation failed: ' + err.message); }
+  btn.disabled = false; btn.textContent = 'Regenerate Bio Page ›';
+});
+
+async function loadManageList() {
+  const list = document.getElementById('manageList');
+  list.innerHTML = 'Loading…';
+  try {
+    const figures = await fetchSanctum('/api/agora/figures');
+    list.innerHTML = figures.length ? '' : '<div class="bio-empty">No figures yet.</div>';
+    figures.forEach(f => {
+      const row = document.createElement('div');
+      row.className = 'fig-manage-row';
+      row.innerHTML = `<span class="fig-manage-name">${f.name} <span style="opacity:.5">(${f.hall})</span></span>
+        <span class="fig-manage-actions">
+          <button class="tiny-btn" data-act="editfig" data-id="${f.id}">Edit</button>
+          <button class="tiny-btn danger" data-act="delfig" data-id="${f.id}">Remove</button>
+        </span>`;
+      list.appendChild(row);
+    });
+  } catch (err) { list.innerHTML = 'Could not load figures: ' + err.message; }
+}
+
+document.addEventListener('click', async (e) => {
+  const t = e.target;
+  if (t.dataset.act === 'editfig') {
+    const f = await fetchSanctum(`/api/agora/figures/${t.dataset.id}`);
+    loadFigureIntoForm(f);
+  }
+  if (t.dataset.act === 'delfig') {
+    if (!confirm('Remove this figure? This cannot be undone.')) return;
+    try { await fetchAdmin('DELETE', `/api/agora/figures/${t.dataset.id}`); toast('Figure removed'); loadManageList(); }
+    catch (err) { alert('Removal failed: ' + err.message); }
+  }
+});
+
+async function loadFigureIntoForm(f) {
+  editingFigureId = f.id;
+  document.getElementById('adminPanelTitle').textContent = 'Editing: ' + f.name;
+  document.getElementById('fName').value = f.name || '';
+  document.getElementById('fHall').value = f.hall || 'symposium';
+  document.getElementById('fEra').value = f.era_dates || '';
+  document.getElementById('fEpithet').value = f.epithet || '';
+  document.getElementById('fVoice').value = f.voice_notes || '';
+  document.getElementById('fTemperament').value = f.temperament || '';
+  document.getElementById('fPhrases').value = f.characteristic_phrases || '';
+  document.getElementById('fDoctrines').value = f.core_doctrines || '';
+  document.getElementById('fReasoning').value = f.reasoning_method || '';
+  document.getElementById('fTags').value = f.domain_tags || '';
+  document.getElementById('fRelationships').value = f.relationships || '';
+  document.getElementById('fWorks').value = f.primary_works || '';
+  document.getElementById('fPortraitPrompt').value = f.portrait_prompt || '';
+  document.querySelectorAll('.form-tab').forEach(t => t.classList.toggle('active', t.dataset.pane === 'profile'));
+  document.querySelectorAll('.form-pane').forEach(p => p.classList.toggle('active', p.id === 'pane-profile'));
+  if (f.portrait_svg) {
+    document.getElementById('portraitPreview').style.display = 'block';
+    document.getElementById('portraitPreview').querySelector('.fc-portrait').innerHTML = f.portrait_svg;
+  }
+  refreshCorpusStatus();
+}
+</script>
+</body>
+</html>
