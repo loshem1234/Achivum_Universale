@@ -450,7 +450,281 @@ app.delete('/api/sanctum/article/:id', requireAdmin, async (req, res) => {
   }
 });
 
-// ── SPA FALLBACK ──────────────────────────────────────────────────────────────
+// ── AGORA ROUTES (Symposium & Pantheon) ──────────────────────────────────────
+
+const agora = require('./agora');
+
+// Agora page — served at /agora, gated client-side by the same sanctum token check
+app.get('/agora', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Public', 'agora.html'));
+});
+
+// ── Public-to-sanctum: browse figures ──
+app.get('/api/agora/figures', requireSanctum, (req, res) => {
+  const { hall } = req.query;
+  const figures = hall ? db.agora.listFiguresByHall(hall) : db.agora.listFigures();
+  res.json(figures);
+});
+
+app.get('/api/agora/figures/:id', requireSanctum, (req, res) => {
+  const figure = db.agora.getFigureById(req.params.id);
+  if (!figure || figure.hidden) return res.status(404).json({ error: 'Not found' });
+  res.json(figure);
+});
+
+// ── Admin: create a figure ──
+app.post('/api/agora/figures', requireAdmin, (req, res) => {
+  try {
+    const body = req.body || {};
+    if (!body.name) return res.status(400).json({ error: 'Name is required.' });
+    const id = uuidv4();
+    const saved = db.agora.insertFigure({ id, ...body });
+    res.status(201).json(saved);
+  } catch (err) {
+    console.error('[POST /api/agora/figures]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Admin: update a figure ──
+app.put('/api/agora/figures/:id', requireAdmin, (req, res) => {
+  try {
+    const existing = db.agora.getFigureById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Not found' });
+    const updated = db.agora.updateFigure({ ...existing, ...req.body, id: req.params.id });
+    res.json(updated);
+  } catch (err) {
+    console.error('[PUT /api/agora/figures/:id]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Admin: delete (soft) a figure ──
+app.delete('/api/agora/figures/:id', requireAdmin, (req, res) => {
+  try {
+    db.agora.deleteFigure(req.params.id);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[DELETE /api/agora/figures/:id]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Admin: AI-draft a persona from name + raw source excerpts ──
+app.post('/api/agora/draft-persona', requireAdmin, async (req, res) => {
+  try {
+    const { name, hall, sourceExcerpts } = req.body;
+    if (!name) return res.status(400).json({ error: 'Name is required.' });
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured.' });
+    const draft = await agora.draftPersona({
+      name, hall: hall || 'symposium',
+      sourceExcerpts: Array.isArray(sourceExcerpts) ? sourceExcerpts : [],
+      apiKey,
+    });
+    res.json(draft);
+  } catch (err) {
+    console.error('[POST /api/agora/draft-persona]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Admin: generate/regenerate the public bio page ──
+app.post('/api/agora/figures/:id/generate-bio', requireAdmin, async (req, res) => {
+  try {
+    const figure = db.agora.getFigureById(req.params.id);
+    if (!figure) return res.status(404).json({ error: 'Not found' });
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured.' });
+    const { bio_html, bibliography_html } = await agora.generateBioPage({ figure, apiKey });
+    const updated = db.agora.updateBioPage(figure.id, bio_html, bibliography_html);
+    res.json(updated);
+  } catch (err) {
+    console.error('[POST /api/agora/figures/:id/generate-bio]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Admin: generate portrait art from the authored prompt ──
+app.post('/api/agora/figures/:id/generate-portrait', requireAdmin, async (req, res) => {
+  try {
+    const figure = db.agora.getFigureById(req.params.id);
+    if (!figure) return res.status(404).json({ error: 'Not found' });
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured.' });
+    const portraitSvg = await agora.generatePortrait({
+      name: figure.name, hall: figure.hall, portraitPrompt: figure.portrait_prompt, apiKey,
+    });
+    const updated = db.agora.updateFigure({ ...figure, portrait_svg: portraitSvg });
+    res.json(updated);
+  } catch (err) {
+    console.error('[POST /api/agora/figures/:id/generate-portrait]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Admin: ingest source text into a figure's RAG corpus ──
+// Accepts either a PDF upload (uses existing R2 + presign pattern) or raw pasted text.
+app.post('/api/agora/figures/:id/ingest-text', requireAdmin, async (req, res) => {
+  try {
+    const figure = db.agora.getFigureById(req.params.id);
+    if (!figure) return res.status(404).json({ error: 'Not found' });
+    const { text, workTitle } = req.body;
+    if (!text || !text.trim()) return res.status(400).json({ error: 'Text is required.' });
+
+    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    const openaiKey     = process.env.OPENAI_API_KEY;
+    if (!anthropicKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured.' });
+    if (!openaiKey)     return res.status(500).json({ error: 'OPENAI_API_KEY not configured.' });
+
+    const jobId = uuidv4();
+    jobs[jobId] = { status: 'running', step: 0, total: 3, message: 'Starting…', result: null, error: null };
+
+    (async () => {
+      try {
+        const rows = await agora.ingestSourceText({
+          text, workTitle: workTitle || '', anthropicKey, openaiKey,
+          onProgress: (step, total, message) => {
+            if (jobs[jobId]) { jobs[jobId].step = step; jobs[jobId].total = total; jobs[jobId].message = message; }
+          },
+        });
+        const chunkRows = rows.map(r => ({ id: uuidv4(), ...r }));
+        db.agora.insertChunks(figure.id, chunkRows);
+        if (jobs[jobId]) {
+          jobs[jobId].status = 'complete';
+          jobs[jobId].result = { chunksAdded: chunkRows.length };
+          jobs[jobId].message = 'Complete';
+        }
+      } catch (err) {
+        console.error('[agora ingest job]', err);
+        if (jobs[jobId]) { jobs[jobId].status = 'error'; jobs[jobId].error = err.message; }
+      }
+    })();
+
+    res.json({ jobId });
+    setTimeout(() => { delete jobs[jobId]; }, 30 * 60 * 1000);
+  } catch (err) {
+    console.error('[POST /api/agora/figures/:id/ingest-text]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Admin: check chunk count for a figure (corpus status) ──
+app.get('/api/agora/figures/:id/corpus', requireAdmin, (req, res) => {
+  try {
+    const count = db.agora.countChunksByFigure(req.params.id);
+    const works = db.agora.listWorksByFigure(req.params.id);
+    res.json({ chunkCount: count, works });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Ingest job polling (reuses the same `jobs` store as book processing) ──
+app.get('/api/agora/ingest/:jobId', requireAdmin, (req, res) => {
+  const job = jobs[req.params.jobId];
+  if (!job) return res.status(404).json({ error: 'Job not found or expired.' });
+  res.json(job);
+});
+
+// ── Sanctum: start a conversation room ──
+app.post('/api/agora/conversations', requireSanctum, (req, res) => {
+  try {
+    const { hall, mode, autonomous, figureIds } = req.body;
+    if (!hall || !mode || !Array.isArray(figureIds) || !figureIds.length)
+      return res.status(400).json({ error: 'hall, mode, and figureIds are required.' });
+    const id = uuidv4();
+    const convo = db.agora.insertConversation({ id, hall, mode, autonomous: !!autonomous, figure_ids: figureIds });
+    res.status(201).json(convo);
+  } catch (err) {
+    console.error('[POST /api/agora/conversations]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/agora/conversations/:id/messages', requireSanctum, (req, res) => {
+  const convo = db.agora.getConversationById(req.params.id);
+  if (!convo) return res.status(404).json({ error: 'Not found' });
+  res.json(db.agora.getMessagesByConversation(req.params.id));
+});
+
+// ── Sanctum: send a user message and get figure response(s) ──
+// For 'solo'/'dialogue'/'roundtable' with a chosen speaker: pass speakerFigureId.
+// For 'assembly' or autonomous turns: omit speakerFigureId and the arbiter decides.
+app.post('/api/agora/conversations/:id/message', requireSanctum, async (req, res) => {
+  try {
+    const convo = db.agora.getConversationById(req.params.id);
+    if (!convo) return res.status(404).json({ error: 'Not found' });
+
+    const anthropicKey = process.env.ANTHROPIC_API_KEY;
+    const openaiKey     = process.env.OPENAI_API_KEY;
+    if (!anthropicKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured.' });
+
+    const { content, speakerFigureId } = req.body;
+    const figures = convo.figure_ids.map(fid => db.agora.getFigureById(fid)).filter(Boolean);
+
+    // 1. Record the user's message, if provided (omit to let figures continue autonomously)
+    if (content && content.trim()) {
+      db.agora.insertMessage({ id: uuidv4(), conversation_id: convo.id, speaker: 'user', content: content.trim() });
+    }
+
+    const history = db.agora.getMessagesByConversation(convo.id);
+    const transcript = history.map(m => ({ speaker: m.speaker === 'user' ? 'user' : m.speaker, content: m.content }));
+
+    // 2. Decide who speaks: explicit choice, or arbiter for autonomous/assembly turns
+    let speakers = [];
+    if (speakerFigureId) {
+      const f = figures.find(f => f.id === speakerFigureId);
+      if (f) speakers = [f];
+    } else if (figures.length === 1) {
+      speakers = figures;
+    } else if (convo.autonomous || convo.mode === 'assembly') {
+      const names = await agora.arbitrate({ figures, transcript, apiKey: anthropicKey });
+      speakers = figures.filter(f => names.includes(f.name));
+      if (!speakers.length) speakers = [figures[0]]; // fail-open: someone should respond
+    } else {
+      return res.status(400).json({ error: 'speakerFigureId is required when not autonomous.' });
+    }
+
+    // 3. Each speaker responds in turn, retrieving from their own corpus, appending to transcript as they go
+    const responses = [];
+    for (const figure of speakers) {
+      let retrievedPassages = [];
+      if (openaiKey) {
+        try {
+          const chunks = db.agora.getChunksByFigure(figure.id);
+          if (chunks.length) {
+            const queryText = transcript.slice(-4).map(t => t.content).join('\n');
+            const queryVec = await agora.embedQuery(queryText, openaiKey);
+            retrievedPassages = agora.retrieveRelevantChunks(chunks, queryVec);
+          }
+        } catch (err) {
+          console.warn(`[agora] Retrieval failed for ${figure.name}:`, err.message);
+        }
+      }
+
+      const liveTranscript = db.agora.getMessagesByConversation(convo.id)
+        .map(m => ({ speaker: m.speaker === 'user' ? 'user' : m.speaker, content: m.content }));
+
+      const replyText = await agora.personaRespond({
+        figure, transcript: liveTranscript, retrievedPassages, apiKey: anthropicKey,
+      });
+
+      db.agora.insertMessage({
+        id: uuidv4(), conversation_id: convo.id, speaker: figure.name,
+        speaker_figure_id: figure.id, content: replyText,
+      });
+      responses.push({ figureId: figure.id, figureName: figure.name, content: replyText });
+    }
+
+    res.json({ responses });
+  } catch (err) {
+    console.error('[POST /api/agora/conversations/:id/message]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'Public', 'index.html'));
 });
